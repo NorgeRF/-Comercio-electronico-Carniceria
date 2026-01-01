@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Prueba - Carnicería Tenerife</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .confirmation-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .status-success { 
+            color: #28a745; 
+            animation: pulse 2s infinite;
+        }
+        
+        .status-pending { 
+            color: #ffc107;
+            animation: spin 3s linear infinite;
+        }
+        
+        .status-error { 
+            color: #dc3545;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .order-details {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+            border-left: 5px solid #667eea;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .order-details h4 {
+            color: #333;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .order-details p {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .order-details strong {
+            color: #333;
+            min-width: 120px;
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            color: #0c5460;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .badge-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+        
+        .badge-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .next-steps {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .next-steps h4 {
+            color: #333;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        
+        .simulation-tag {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            transform: rotate(5deg);
+        }
+        
+        .confirmation-container {
+            position: relative;
+        }
+        
+        .simulation-result {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .result-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 2px dashed #28a745;
+        }
+        
+        .result-pending {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 2px dashed #ffc107;
+        }
+        
+        .result-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 2px dashed #dc3545;
+        }
+        
+        code {
+            background: #333;
+            color: #00ff9d;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <div class="simulation-tag">
+            <i class="fas fa-flask"></i> MODO PRUEBA
+        </div>
+        
+        <% 
+        // Cambia los nombres de las variables para evitar conflicto
+        const orderCode = query.pedido || 'TEST-0000';
+        const simulationType = query.simulacion || 'success';
+        
+        let statusInfo = {
+            success: { 
+                icon: 'fa-check-circle', 
+                class: 'status-success', 
+                title: '¡Pago Exitoso!', 
+                message: 'La simulación de pago fue exitosa.',
+                resultClass: 'result-success',
+                resultText: '? Simulación Exitosa'
+            },
+            pending: { 
+                icon: 'fa-clock', 
+                class: 'status-pending', 
+                title: 'Pago Pendiente', 
+                message: 'La simulación de pago está pendiente de confirmación.',
+                resultClass: 'result-pending',
+                resultText: '? Simulación Pendiente'
+            },
+            failure: { 
+                icon: 'fa-times-circle', 
+                class: 'status-error', 
+                title: 'Pago Rechazado', 
+                message: 'La simulación de pago fue rechazada.',
+                resultClass: 'result-error',
+                resultText: '? Simulación Fallida'
+            }
+        };
+        
+        const info = statusInfo[simulationType] || statusInfo.success;
+        %>
+        
+        <div class="status-icon <%= info.class %>">
+            <i class="fas <%= info.icon %>"></i>
+        </div>
+        
+        <h2><%= info.title %></h2>
+        <p><%= info.message %></p>
+        
+        <div class="simulation-result <%= info.resultClass %>">
+            <i class="fas <%= info.icon %>"></i>
+            <%= info.resultText %>
+        </div>
+        
+        <div class="order-details">
+            <h4><i class="fas fa-clipboard-list"></i> Detalles del Pedido de Prueba</h4>
+            <p>
+                <strong><i class="fas fa-hashtag"></i> Código:</strong> 
+                <code><%= orderCode %></code>
+            </p>
+            <p>
+                <strong><i class="fas fa-vial"></i> Tipo de Simulación:</strong> 
+                <span style="text-transform: uppercase; font-weight: bold;"><%= simulationType %></span>
+            </p>
+            <p>
+                <strong><i class="far fa-calendar-alt"></i> Fecha y Hora:</strong> 
+                <%= new Date().toLocaleString('es-ES', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }) %>
+            </p>
+            <p>
+                <strong><i class="fas fa-tag"></i> Estado:</strong> 
+                <% if (simulationType === 'success') { %>
+                    <span class="badge badge-success">Confirmado</span>
+                <% } else if (simulationType === 'pending') { %>
+                    <span class="badge badge-warning">Pendiente</span>
+                <% } else { %>
+                    <span class="badge badge-danger">Rechazado</span>
+                <% } %>
+            </p>
+            <p>
+                <strong><i class="fas fa-info-circle"></i> ID de Referencia:</strong> 
+                <code>SIM-<%= Date.now().toString().slice(-8) %></code>
+            </p>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle fa-2x"></i>
+            <div>
+                <strong>Modo de Prueba Activado</strong><br>
+                Este pedido fue completamente simulado. No se procesó ningún pago real ni se realizó ninguna transacción financiera.
+            </div>
+        </div>
+        
+        <div class="next-steps">
+            <h4><i class="fas fa-arrow-right"></i> ¿Qué hacer ahora?</h4>
+            <p style="text-align: center; color: #666; margin-bottom: 25px;">
+                Puedes ver este pedido en el panel de administración o realizar más pruebas.
+            </p>
+            
+            <div class="button-group">
+                <a href="/admin/orders" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Ver en Admin
+                </a>
+                <a href="/admin/orders/report" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Ver Reportes
+                </a>
+                <a href="/pedidos" class="btn btn-secondary">
+                    <i class="fas fa-shopping-cart"></i> Nuevo Pedido
+                </a>
+                <a href="/" class="btn" style="background: #f8f9fa; color: #333; border: 2px solid #ddd;">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ddd;">
+                <p style="font-size: 0.9em; color: #888;">
+                    <i class="fas fa-lightbulb"></i> 
+                    <strong>Consejo:</strong> Para desactivar el modo de prueba, haz clic en el botón "Modo Prueba" en la esquina inferior derecha de la página de pedidos.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Agregar efectos adicionales
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar mensaje en consola
+            console.log('?? Pedido de prueba confirmado:', '<%= orderCode %>');
+            console.log('?? Simulación:', '<%= simulationType %>');
+            
+            // Agregar efecto de confeti para éxito
+            <% if (simulationType === 'success') { %>
+            setTimeout(() => {
+                console.log('?? ¡Simulación exitosa!');
+            }, 1000);
+            <% } %>
+        });
+    </script>
+</body>
+</html>

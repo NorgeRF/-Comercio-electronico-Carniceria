@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ESTILOS PARA SLIDER DE MARKETING */
+        .marketing-slider-section {
+            background: linear-gradient(90deg, var(--primary-color), #a71c1c);
+            color: white;
+            padding: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .marketing-slider-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .marketing-track {
+            display: flex;
+            gap: 50px;
+            animation: slideMarquee 30s linear infinite;
+            white-space: nowrap;
+            padding: 10px 0;
+        }
+        
+        .marketing-slide {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        
+        .marketing-slide i {
+            font-size: 1.3rem;
+            color: #ffd700;
+        }
+        
+        .marketing-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        @keyframes slideMarquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        
+        /* Pausar animación al hover */
+        .marketing-track:hover {
+            animation-play-state: paused;
+        }
+        
+        /* Degradado en los extremos */
+        .marketing-slider-container::before,
+        .marketing-slider-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            z-index: 2;
+        }
+        
+        .marketing-slider-container::before {
+            left: 0;
+            background: linear-gradient(to right, var(--primary-color), transparent);
+        }
+        
+        .marketing-slider-container::after {
+            right: 0;
+            background: linear-gradient(to left, var(--primary-color), transparent);
+        }
+        
+        /* Resto de estilos (se mantienen igual) */
+        .order-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .cart-section, .order-form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .cart-items {
+            margin: 20px 0;
+        }
+        
+        .cart-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-weight: 500;
+        }
+        
+        .item-price, .item-total {
+            text-align: right;
+        }
+        
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .qty-btn {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qty-input {
+            width: 40px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 2px;
+        }
+        
+        .remove-item {
+            color: #dc3545;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #c62828;
+            text-align: right;
+        }
+        
+        .total-amount {
+            font-size: 1.5rem;
+            color: #c62828;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #c62828;
+        }
+        
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+        }
+        
+        .auto-filled {
+            position: relative;
+        }
+        
+        .auto-filled::after {
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .payment-method {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-method.active {
+            border-color: #c62828;
+            background: rgba(198, 40, 40, 0.05);
+        }
+        
+        .payment-method i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .payment-method[data-method="efectivo"] i {
+            color: #28a745;
+        }
+        
+        .payment-method[data-method="transferencia"] i {
+            color: #17a2b8;
+        }
+        
+        .payment-method[data-method="tarjeta"] i {
+            color: #007bff;
+        }
+        
+        .payment-method[data-method="bizum"] i {
+            color: #6f42c1;
+        }
+        
+        .payment-method[data-method="bizum"] {
+            position: relative;
+        }
+        
+        .payment-method[data-method="bizum"]::after {
+            content: "Popular";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #6f42c1;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+        
+        .empty-cart i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .whatsapp-order-btn {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .whatsapp-order-btn:hover {
+            background: #128C7E;
+        }
+        
+        .stripe-payment {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        #card-element {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .bizum-instructions {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 5px;
+            border-left: 4px solid #6f42c1;
+        }
+        
+        .bizum-instructions h5 {
+            color: #6f42c1;
+            margin-bottom: 10px;
+        }
+        
+        .bizum-instructions ol {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+        
+        .bizum-instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-link {
+            color: #c62828;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .alert-link:hover {
+            text-decoration: underline;
+        }
+        
+        .float-end {
+            float: right;
+        }
+        
+        /* ESTILOS PARA HEADER FIXED (como en las otras páginas) */
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+            padding-top: 80px; /* ESPACIO PARA HEADER FIXED */
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* HEADER FIXED CON FONDO SÓLIDO */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 0;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            min-height: 80px;
+        }
+        
+        .nav-brand .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #c00;
+            text-decoration: none;
+        }
+        
+        .nav-brand .logo i {
+            font-size: 2.2rem;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(200, 0, 0, 0.08);
+            color: #c00;
+        }
+        
+        .nav-link.active {
+            background: #c00;
+            color: white;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        /* CARRITO DE COMPRAS EN HEADER */
+        .cart-icon-wrapper {
+            position: relative;
+        }
+        
+        .cart-icon {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #333;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-icon:hover {
+            background: rgba(200, 0, 0, 0.08);
+            color: #c00;
+        }
+        
+        .cart-count {
+            background: #c00;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/orders-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 0;
+            margin-top: 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            body {
+                padding-top: 70px;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                transform: translateY(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 999;
+            }
+            
+            .nav-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .order-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .cart-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .item-quantity {
+                justify-content: center;
+            }
+            
+            .item-price, .item-total {
+                text-align: center;
+            }
+            
+            .marketing-slide {
+                font-size: 0.9rem;
+            }
+            
+            .marketing-slide i {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .payment-method {
+                min-width: 100px;
+            }
+            
+            .marketing-slide {
+                font-size: 0.8rem;
+                gap: 10px;
+            }
+            
+            .marketing-badge {
+                font-size: 0.7rem;
+                padding: 3px 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .cart-section, .order-form-section {
+                padding: 20px;
+            }
+            
+            .marketing-slider-section {
+                padding: 10px 0;
+            }
+            
+            .marketing-slide {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/<%= whatsapp_number %>?text=Hola,%20me%20interesan%20sus%20productos" 
+       class="whatsapp-float" 
+       target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Header Fixed -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="/" class="logo">
+                        <i class="fas fa-utensils"></i>
+                        <span>Carnicería Tenerife</span>
+                    </a>
+                </div>
+                
+                <!-- Icono del carrito para móviles -->
+                <div class="cart-icon-wrapper">
+                    <a href="/pedidos" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+                
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <a href="/" class="nav-link">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                    <a href="/productos" class="nav-link">
+                        <i class="fas fa-drumstick-bite"></i> Productos
+                    </a>
+                    <a href="/pedidos" class="nav-link active">
+                        <i class="fas fa-shopping-cart"></i> Hacer Pedido
+                    </a>
+                    <a href="/contacto" class="nav-link">
+                        <i class="fas fa-envelope"></i> Contacto
+                    </a>
+                    
+                    <% if (customer) { %>
+                        <div class="dropdown" id="userDropdown">
+                            <a href="#" class="nav-link dropdown-toggle">
+                                <i class="fas fa-user"></i> Mi Cuenta
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/mi-cuenta">
+                                    <i class="fas fa-user-circle"></i> Mi Perfil
+                                </a></li>
+                                <li><a class="dropdown-item" href="/mis-pedidos">
+                                    <i class="fas fa-shopping-bag"></i> Mis Pedidos
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout-cliente">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                </a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login-cliente" class="nav-link">
+                            <i class="fas fa-sign-in-alt"></i> Acceder
+                        </a>
+                    <% } %>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Realizar Pedido</h2>
+                <p>Completa tu pedido y elige el método de entrega</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NUEVO: Slider de Marketing -->
+    <section class="marketing-slider-section">
+        <div class="container">
+            <div class="marketing-slider-container">
+                <div class="marketing-track" id="marketingTrack">
+                    <!-- Mensajes de marketing que se repiten -->
+                    <div class="marketing-slide">
+                        <i class="fas fa-truck"></i>
+                        <span>Envío GRATIS en pedidos superiores a 50€</span>
+                        <span class="marketing-badge">NUEVO</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-clock"></i>
+                        <span>Entrega en 24-48 horas en toda Tenerife</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-percentage"></i>
+                        <span>¡10% de descuento en tu primer pedido!</span>
+                        <span class="marketing-badge">OFERTA</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-utensils"></i>
+                        <span>Productos 100% frescos y de calidad</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Compra segura con múltiples métodos de pago</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Atención personalizada por WhatsApp</span>
+                    </div>
+                    <!-- Duplicados para efecto continuo -->
+                    <div class="marketing-slide">
+                        <i class="fas fa-truck"></i>
+                        <span>Envío GRATIS en pedidos superiores a 50€</span>
+                        <span class="marketing-badge">NUEVO</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-clock"></i>
+                        <span>Entrega en 24-48 horas en toda Tenerife</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-percentage"></i>
+                        <span>¡10% de descuento en tu primer pedido!</span>
+                        <span class="marketing-badge">OFERTA</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-utensils"></i>
+                        <span>Productos 100% frescos y de calidad</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Compra segura con múltiples métodos de pago</span>
+                    </div>
+                    <div class="marketing-slide">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Atención personalizada por WhatsApp</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Container -->
+    <section class="order-process">
+        <div class="container">
+            <div class="order-container">
+                <!-- Cart Section -->
+                <div class="cart-section">
+                    <h3><i class="fas fa-shopping-cart"></i> Tu Carrito</h3>
+                    
+                    <div class="cart-items" id="cart-items">
+                        <!-- Los items del carrito se cargan con JavaScript -->
+                    </div>
+                    
+                    <div class="cart-total">
+                        <h4>Total: <span class="total-amount" id="cart-total">€0.00</span></h4>
+                    </div>
+                    
+                    <div class="cart-actions">
+                        <button class="btn btn-secondary" id="clear-cart">
+                            <i class="fas fa-trash"></i> Vaciar Carrito
+                        </button>
+                        <button class="btn btn-primary" id="continue-shopping">
+                            <i class="fas fa-store"></i> Seguir Comprando
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Order Form Section -->
+                <div class="order-form-section">
+                    <h3><i class="fas fa-user"></i> Datos del Pedido</h3>
+                    
+                    <!-- Mensaje según estado del cliente -->
+                    <% if (customer) { %>
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-user-check"></i> 
+                            <strong>Hola <%= customer.nombre %></strong> - Tus datos se cargarán automáticamente.
+                            <a href="/mi-perfil" class="float-end"><i class="fas fa-edit"></i> Editar</a>
+                        </div>
+                        
+                        <!-- Cargar datos automáticamente con JavaScript -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                // Auto-completar formulario con datos del cliente
+                                const customerData = {
+                                    nombre: '<%= customer.nombre %>',
+                                    telefono: '<%= customer.telefono || "" %>',
+                                    email: '<%= customer.email %>',
+                                    direccion: '<%= customer.direccion || "" %>',
+                                    ciudad: '<%= customer.ciudad || "" %>',
+                                    codigo_postal: '<%= customer.codigo_postal || "" %>'
+                                };
+                                
+                                // Llenar campos del formulario
+                                if (customerData.nombre) {
+                                    document.getElementById('cliente_nombre').value = customerData.nombre;
+                                    document.getElementById('cliente_nombre').classList.add('auto-filled');
+                                }
+                                
+                                if (customerData.telefono) {
+                                    document.getElementById('cliente_telefono').value = customerData.telefono;
+                                    document.getElementById('cliente_telefono').classList.add('auto-filled');
+                                }
+                                
+                                if (customerData.email) {
+                                    document.getElementById('cliente_email').value = customerData.email;
+                                    document.getElementById('cliente_email').classList.add('auto-filled');
+                                }
+                                
+                                if (customerData.direccion) {
+                                    document.getElementById('cliente_direccion').value = customerData.direccion;
+                                    document.getElementById('cliente_direccion').classList.add('auto-filled');
+                                }
+                                
+                                if (customerData.ciudad) {
+                                    document.getElementById('cliente_ciudad').value = customerData.ciudad;
+                                    document.getElementById('cliente_ciudad').classList.add('auto-filled');
+                                }
+                                
+                                if (customerData.codigo_postal) {
+                                    document.getElementById('cliente_codigo_postal').value = customerData.codigo_postal;
+                                    document.getElementById('cliente_codigo_postal').classList.add('auto-filled');
+                                }
+                                
+                                // Validar si el cliente tiene datos completos
+                                const tieneDatosCompletos = customerData.telefono && 
+                                                          customerData.direccion && 
+                                                          customerData.ciudad;
+                                
+                                if (!tieneDatosCompletos) {
+                                    // Mostrar alerta si faltan datos
+                                    const alertDiv = document.createElement('div');
+                                    alertDiv.className = 'alert alert-warning mt-2';
+                                    alertDiv.innerHTML = `
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>Faltan datos:</strong> Para hacer pedidos necesitas tener teléfono, dirección y ciudad completos.
+                                        <a href="/mi-perfil" class="alert-link">Completar perfil</a>
+                                    `;
+                                    document.querySelector('.order-form-section').insertBefore(alertDiv, document.querySelector('#order-form'));
+                                }
+                            });
+                        </script>
+                    <% } else { %>
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>¿Ya eres cliente?</strong> 
+                            <a href="/login-cliente" class="alert-link">Inicia sesión</a> para cargar tus datos automáticamente.
+                        </div>
+                    <% } %>
+                    
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label for="cliente_nombre">Nombre Completo *</label>
+                            <input type="text" 
+                                   id="cliente_nombre" 
+                                   class="form-control" 
+                                   required
+                                   placeholder="Juan Pérez"
+                                   <%= customer ? 'readonly' : '' %>>
+                            <% if (customer) { %>
+                                <small class="text-muted">Datos cargados desde tu perfil</small>
+                            <% } %>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cliente_telefono">Teléfono *</label>
+                            <input type="tel" 
+                                   id="cliente_telefono" 
+                                   class="form-control" 
+                                   required
+                                   placeholder="+34 600 000 000"
+                                   <%= customer && customer.telefono ? 'readonly' : '' %>>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cliente_email">Email</label>
+                            <input type="email" 
+                                   id="cliente_email" 
+                                   class="form-control" 
+                                   placeholder="email@ejemplo.com"
+                                   <%= customer ? 'readonly' : '' %>>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cliente_direccion">Dirección de Entrega *</label>
+                            <textarea id="cliente_direccion" 
+                                      class="form-control" 
+                                      rows="3" 
+                                      required
+                                      placeholder="Calle, número, piso..."
+                                      <%= customer && customer.direccion ? 'readonly' : '' %>></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                                <div>
+                                    <label for="cliente_ciudad">Ciudad *</label>
+                                    <input type="text" 
+                                           id="cliente_ciudad" 
+                                           class="form-control" 
+                                           required
+                                           placeholder="Santa Cruz de Tenerife"
+                                           <%= customer && customer.ciudad ? 'readonly' : '' %>>
+                                </div>
+                                <div>
+                                    <label for="cliente_codigo_postal">C.P.</label>
+                                    <input type="text" 
+                                           id="cliente_codigo_postal" 
+                                           class="form-control" 
+                                           placeholder="38001"
+                                           <%= customer && customer.codigo_postal ? 'readonly' : '' %>>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Método de Pago *</label>
+                            <div class="payment-methods">
+                                <div class="payment-method" data-method="efectivo">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Efectivo</span>
+                                </div>
+                                <div class="payment-method" data-method="transferencia">
+                                    <i class="fas fa-university"></i>
+                                    <span>Transferencia</span>
+                                </div>
+                                <div class="payment-method" data-method="tarjeta">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <span>Tarjeta</span>
+                                </div>
+                                <div class="payment-method" data-method="bizum">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>Bizum</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="metodo_pago" required>
+                        </div>
+                        
+                        <!-- Instrucciones para Bizum -->
+                        <div id="bizum-instructions" class="bizum-instructions" style="display: none;">
+                            <h5><i class="fas fa-info-circle"></i> Cómo pagar con Bizum:</h5>
+                            <ol>
+                                <li>Realiza el pedido normalmente</li>
+                                <li>Te enviaremos un mensaje con nuestro número de teléfono para Bizum</li>
+                                <li>Envía el importe exacto del pedido: <strong id="bizum-amount">€0.00</strong></li>
+                                <li>Incluye en el concepto: <code id="bizum-reference">PED-0000</code></li>
+                                <li>¡Listo! Confirmaremos el pago en cuanto lo recibamos</li>
+                            </ol>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                <i class="fas fa-phone"></i> Número Bizum: <strong><%= whatsapp_number %></strong>
+                            </p>
+                        </div>
+                        
+                        <div id="stripe-payment" class="stripe-payment" style="display: none;">
+                            <div id="card-element">
+                                <!-- Stripe Card Element will be inserted here -->
+                            </div>
+                            <div id="card-errors" role="alert" style="color: #dc3545; margin-top: 10px;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notas">Notas adicionales</label>
+                            <textarea id="notas" 
+                                      class="form-control" 
+                                      rows="3"
+                                      placeholder="Instrucciones especiales para la entrega..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="submit-order" style="width: 100%; padding: 15px;">
+                            <i class="fas fa-check-circle"></i> Confirmar Pedido
+                        </button>
+                        
+                        <button type="button" class="whatsapp-order-btn" id="whatsapp-order">
+                            <i class="fab fa-whatsapp"></i> Pedir por WhatsApp
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-section">
+                <h3>Carnicería Tenerife</h3>
+                <p>Productos cárnicos de máxima calidad desde 1990</p>
+            </div>
+            <div class="footer-section">
+                <h3>Enlaces Rápidos</h3>
+                <a href="/">Inicio</a>
+                <a href="/productos">Productos</a>
+                <a href="/pedidos">Pedidos</a>
+                <a href="/contacto">Contacto</a>
+            </div>
+            <div class="footer-section">
+                <h3>Métodos de Pago</h3>
+                <div class="payment-methods" style="justify-content: center; gap: 10px;">
+                    <i class="fas fa-money-bill-wave" title="Efectivo"></i>
+                    <i class="fas fa-university" title="Transferencia"></i>
+                    <i class="fab fa-cc-visa" title="Tarjeta"></i>
+                    <i class="fas fa-mobile-alt" title="Bizum"></i>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <%= currentYear %> Carnicería Tenerife. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/script.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Variables globales
+        let stripe, elements, card;
+        
+        // Función principal para cargar y mostrar el carrito
+        function loadAndRenderCart() {
+            console.log('Cargando carrito para página de pedidos...');
+            
+            let cartItems = [];
+            
+            // Intentar cargar desde el carrito global (script.js)
+            if (typeof cart !== 'undefined' && cart.items) {
+                console.log('Usando carrito global:', cart.items);
+                cartItems = cart.items;
+                
+                // Actualizar contador del carrito global
+                cart.updateCartCount();
+            } else {
+                // Fallback: cargar desde localStorage
+                try {
+                    const cartData = localStorage.getItem('carniceria_cart') || '[]';
+                    cartItems = JSON.parse(cartData);
+                    console.log('Cargado desde localStorage:', cartItems);
+                } catch (e) {
+                    console.error('Error cargando carrito:', e);
+                    cartItems = [];
+                }
+            }
+            
+            renderCartItems(cartItems);
+            updateCartCount(cartItems);
+        }
+        
+        // Renderizar items del carrito
+        function renderCartItems(cartItems) {
+            const container = document.getElementById('cart-items');
+            const totalElement = document.getElementById('cart-total');
+            
+            if (!cartItems || cartItems.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h4>Tu carrito está vacío</h4>
+                        <p>Añade algunos productos para continuar!</p>
+                    </div>
+                `;
+                totalElement.textContent = '€0.00';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            cartItems.forEach((item, index) => {
+                const itemTotal = (item.price || 0) * (item.quantity || 0);
+                total += itemTotal;
+                
+                html += `
+                    <div class="cart-item" data-index="${index}">
+                        <div class="item-name">
+                            <strong>${item.name || 'Producto'}</strong><br>
+                            <small>€${(item.price || 0).toFixed(2)}/${item.unit || 'unidad'}</small>
+                        </div>
+                        <div class="item-quantity">
+                            <div class="quantity-control">
+                                <button class="qty-btn minus" onclick="updateCartQuantity(${index}, -1)">-</button>
+                                <input type="number" 
+                                       class="qty-input" 
+                                       value="${item.quantity || 1}" 
+                                       min="1"
+                                       onchange="updateCartQuantityInput(${index}, this.value)">
+                                <button class="qty-btn plus" onclick="updateCartQuantity(${index}, 1)">+</button>
+                            </div>
+                            <span class="remove-item" onclick="removeCartItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </span>
+                        </div>
+                        <div class="item-price">
+                            €${(item.price || 0).toFixed(2)}
+                        </div>
+                        <div class="item-total">
+                            <strong>€${itemTotal.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            totalElement.textContent = `€${total.toFixed(2)}`;
+            
+            // Actualizar información de Bizum si está activo
+            updateBizumInfo();
+        }
+        
+        // Actualizar contador del carrito
+        function updateCartCount(cartItems) {
+            const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            document.querySelectorAll('.cart-count').forEach(element => {
+                element.textContent = totalItems;
+            });
+        }
+        
+        // Funciones globales para manipular el carrito
+        window.updateCartQuantity = function(index, change) {
+            let cartItems = getCartItems();
+            
+            if (cartItems && cartItems[index]) {
+                const newQuantity = (cartItems[index].quantity || 0) + change;
+                if (newQuantity >= 1) {
+                    cartItems[index].quantity = newQuantity;
+                    saveCartItems(cartItems);
+                    loadAndRenderCart();
+                }
+            }
+        };
+        
+        window.updateCartQuantityInput = function(index, value) {
+            let cartItems = getCartItems();
+            
+            if (cartItems && cartItems[index]) {
+                const newQuantity = parseInt(value);
+                if (!isNaN(newQuantity) && newQuantity >= 1) {
+                    cartItems[index].quantity = newQuantity;
+                    saveCartItems(cartItems);
+                    loadAndRenderCart();
+                }
+            }
+        };
+        
+        window.removeCartItem = function(index) {
+            if (confirm('¿Eliminar este producto del carrito?')) {
+                let cartItems = getCartItems();
+                
+                if (cartItems && cartItems[index]) {
+                    cartItems.splice(index, 1);
+                    saveCartItems(cartItems);
+                    loadAndRenderCart();
+                }
+            }
+        };
+        
+        // Obtener items del carrito (compatible con script.js y localStorage)
+        function getCartItems() {
+            if (typeof cart !== 'undefined' && cart.items) {
+                return cart.items;
+            } else {
+                try {
+                    const cartData = localStorage.getItem('carniceria_cart') || '[]';
+                    return JSON.parse(cartData);
+                } catch (e) {
+                    console.error('Error obteniendo carrito:', e);
+                    return [];
+                }
+            }
+        }
+        
+        // Guardar items del carrito (compatible con script.js y localStorage)
+        function saveCartItems(cartItems) {
+            if (typeof cart !== 'undefined' && cart.saveToStorage) {
+                cart.items = cartItems;
+                cart.saveToStorage();
+            } else {
+                localStorage.setItem('carniceria_cart', JSON.stringify(cartItems));
+                
+                // Actualizar contador manualmente
+                const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                document.querySelectorAll('.cart-count').forEach(element => {
+                    element.textContent = totalItems;
+                });
+            }
+        }
+        
+        // Vaciar carrito
+        document.getElementById('clear-cart').addEventListener('click', () => {
+            let cartItems = getCartItems();
+            
+            if (cartItems.length > 0 && confirm('¿Vaciar todo el carrito?')) {
+                if (typeof cart !== 'undefined' && cart.clear) {
+                    cart.clear();
+                } else {
+                    localStorage.setItem('carniceria_cart', JSON.stringify([]));
+                }
+                loadAndRenderCart();
+            }
+        });
+        
+        // Seguir comprando
+        document.getElementById('continue-shopping').addEventListener('click', () => {
+            window.location.href = '/productos';
+        });
+        
+        // Método de pago seleccionado
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => {
+                    m.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const paymentMethod = this.dataset.method;
+                document.getElementById('metodo_pago').value = paymentMethod;
+                
+                // Mostrar/ocultar Stripe para pagos con tarjeta
+                const stripeSection = document.getElementById('stripe-payment');
+                if (paymentMethod === 'tarjeta') {
+                    stripeSection.style.display = 'block';
+                    initStripe();
+                } else {
+                    stripeSection.style.display = 'none';
+                }
+                
+                // Mostrar/ocultar instrucciones para Bizum
+                const bizumSection = document.getElementById('bizum-instructions');
+                if (paymentMethod === 'bizum') {
+                    bizumSection.style.display = 'block';
+                    // Actualizar monto y referencia
+                    updateBizumInfo();
+                } else {
+                    bizumSection.style.display = 'none';
+                }
+            });
+        });
+        
+        // Inicializar Stripe
+        function initStripe() {
+            if (typeof Stripe === 'undefined') return;
+            
+            stripe = Stripe('<%= stripePublicKey %>');
+            elements = stripe.elements();
+            card = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                        fontFamily: 'Roboto, sans-serif'
+                    }
+                }
+            });
+            
+            card.mount('#card-element');
+            
+            card.addEventListener('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        }
+        
+        // Función para actualizar información de Bizum
+        function updateBizumInfo() {
+            let cartItems = getCartItems();
+            const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+            const iva = total * 0.21;
+            const envio = total > 50 ? 0 : 5;
+            const totalConIvaYEnvio = total + iva + envio;
+            
+            // Generar referencia única para Bizum
+            const timestamp = Date.now();
+            const referencia = `PED-${timestamp.toString().slice(-6)}`;
+            
+            document.getElementById('bizum-amount').textContent = `€${totalConIvaYEnvio.toFixed(2)}`;
+            document.getElementById('bizum-reference').textContent = referencia;
+        }
+        
+        // Función para mostrar modal de Bizum
+        function showBizumModal(total, referencia) {
+            const modalHtml = `
+                <div class="modal-overlay" id="bizumModal">
+                    <div class="modal-content">
+                        <h3><i class="fas fa-mobile-alt" style="color: #6f42c1;"></i> Pago con Bizum</h3>
+                        
+                        <div style="margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 5px;">
+                            <p><strong>Importe a pagar:</strong> €${total.toFixed(2)}</p>
+                            <p><strong>Referencia:</strong> <code>${referencia}</code></p>
+                            <p><strong>Número Bizum:</strong> <strong><%= whatsapp_number %></strong></p>
+                        </div>
+                        
+                        <h4>Instrucciones:</h4>
+                        <ol style="margin-left: 20px;">
+                            <li>Abre tu aplicación de banca móvil</li>
+                            <li>Selecciona la opción "Bizum"</li>
+                            <li>Introduce nuestro número: <strong><%= whatsapp_number %></strong></li>
+                            <li>Envía el importe exacto: <strong>€${total.toFixed(2)}</strong></li>
+                            <li>En el concepto, escribe: <code>${referencia}</code></li>
+                        </ol>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+                            <p><i class="fas fa-exclamation-circle"></i> <strong>Importante:</strong> El pedido se confirmará una vez recibido el pago por Bizum.</p>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeBizumModal()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="confirmBizumOrder('${referencia}')">
+                                <i class="fas fa-check"></i> Ya he pagado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Agregar modal al body
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('bizumModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeBizumModal();
+                }
+            });
+        }
+        
+        // Cerrar modal de Bizum
+        function closeBizumModal() {
+            const modal = document.getElementById('bizumModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Obtener datos del formulario (versión mejorada)
+        function getOrderData() {
+            let cartItems = getCartItems();
+            
+            // Obtener datos del formulario
+            let orderData = {
+                cliente_nombre: document.getElementById('cliente_nombre').value,
+                cliente_telefono: document.getElementById('cliente_telefono').value,
+                cliente_email: document.getElementById('cliente_email').value || '',
+                cliente_direccion: document.getElementById('cliente_direccion').value,
+                cliente_ciudad: document.getElementById('cliente_ciudad').value,
+                cliente_codigo_postal: document.getElementById('cliente_codigo_postal').value || '',
+                metodo_pago: document.getElementById('metodo_pago').value,
+                notas: document.getElementById('notas').value || '',
+                productos: cartItems.map(item => ({
+                    id: item.id,
+                    cantidad: item.quantity,
+                    precio: item.price
+                })),
+                total: cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
+            };
+            
+            return orderData;
+        }
+        
+        // Función para verificar si el cliente está autenticado
+        async function checkCustomerAuth() {
+            try {
+                const response = await fetch('/api/customer/profile');
+                const data = await response.json();
+                return data.success === true;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // Confirmar pedido con Bizum
+        async function confirmBizumOrder(referencia) {
+            try {
+                const submitBtn = document.getElementById('submit-order');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Confirmando...';
+                
+                // Obtener datos del formulario
+                const orderData = getOrderData();
+                orderData.referencia_bizum = referencia;
+                orderData.metodo_pago = 'bizum';
+                
+                // Determinar qué API usar basado en si el cliente está autenticado
+                let apiEndpoint = '/api/orders'; // Para clientes autenticados
+                
+                // Verificar si hay sesión de cliente
+                const isCustomerAuthenticated = await checkCustomerAuth();
+                if (!isCustomerAuthenticated) {
+                    // Usar API para pedidos anónimos
+                    apiEndpoint = '/api/pedidos-anonimos';
+                    console.log('Usando API para pedidos anónimos');
+                } else {
+                    console.log('Cliente autenticado, usando API normal');
+                }
+                
+                // Enviar pedido a la API
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Limpiar carrito
+                    if (typeof cart !== 'undefined' && cart.clear) {
+                        cart.clear();
+                    } else {
+                        localStorage.setItem('carniceria_cart', JSON.stringify([]));
+                    }
+                    
+                    // Cerrar modal
+                    closeBizumModal();
+                    
+                    // Mostrar mensaje de éxito
+                    alert(`¡Pedido creado exitosamente!\nCódigo: ${result.order.codigo_pedido}\n\nRecuerda que debes enviar el pago por Bizum para que procesemos tu pedido.`);
+                    
+                    // Redirigir según si es cliente registrado
+                    if (isCustomerAuthenticated) {
+                        window.location.href = '/mis-pedidos';
+                    } else {
+                        window.location.href = '/';
+                    }
+                } else {
+                    throw new Error(result.message || 'Error al crear pedido');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+                
+                const submitBtn = document.getElementById('submit-order');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmar Pedido';
+            }
+        }
+        
+        // Enviar pedido (versión mejorada)
+        document.getElementById('order-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            let cartItems = getCartItems();
+            
+            if (!cartItems || cartItems.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+            
+            const paymentMethod = document.getElementById('metodo_pago').value;
+            if (!paymentMethod) {
+                alert('Por favor, selecciona un método de pago');
+                return;
+            }
+            
+            // Si es Bizum, mostrar modal especial
+            if (paymentMethod === 'bizum') {
+                const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+                const timestamp = Date.now();
+                const referencia = `BIZUM-${timestamp.toString().slice(-6)}`;
+                
+                showBizumModal(total, referencia);
+                return; // No continuar con el envío normal
+            }
+            
+            // Validar datos obligatorios
+            const requiredFields = [
+                'cliente_nombre',
+                'cliente_telefono', 
+                'cliente_direccion',
+                'cliente_ciudad'
+            ];
+            
+            for (const fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field || !field.value.trim()) {
+                    alert(`Por favor, completa el campo: ${field.placeholder || field.name}`);
+                    field.focus();
+                    return;
+                }
+            }
+            
+            // Verificar formato de teléfono
+            const telefono = document.getElementById('cliente_telefono').value;
+            const telefonoLimpio = telefono.replace(/\D/g, '');
+            if (telefonoLimpio.length < 9) {
+                alert('Por favor, introduce un número de teléfono válido (mínimo 9 dígitos)');
+                document.getElementById('cliente_telefono').focus();
+                return;
+            }
+            
+            try {
+                const submitBtn = document.getElementById('submit-order');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                
+                // Obtener datos del pedido
+                const orderData = getOrderData();
+                
+                // Determinar qué API usar basado en si el cliente está autenticado
+                let apiEndpoint = '/api/orders'; // Para clientes autenticados
+                
+                // Verificar si hay sesión de cliente
+                const isCustomerAuthenticated = await checkCustomerAuth();
+                if (!isCustomerAuthenticated) {
+                    // Usar API para pedidos anónimos
+                    apiEndpoint = '/api/pedidos-anonimos';
+                    console.log('Usando API para pedidos anónimos');
+                } else {
+                    console.log('Cliente autenticado, usando API normal');
+                }
+                
+                // Si es pago con tarjeta, procesar con Stripe primero
+                if (paymentMethod === 'tarjeta' && typeof stripe !== 'undefined') {
+                    // Crear intención de pago
+                    const paymentResponse = await fetch('/api/payments/create-intent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: Math.round(orderData.total * 100), // Stripe usa centavos
+                            orderId: `TEMP-${Date.now()}`,
+                            metadata: { tipo: 'pedido_carniceria' }
+                        })
+                    });
+                    
+                    const paymentData = await paymentResponse.json();
+                    
+                    if (!paymentData.success) {
+                        throw new Error(paymentData.message || 'Error al crear intención de pago');
+                    }
+                    
+                    if (paymentData.clientSecret) {
+                        // Confirmar pago con Stripe
+                        const { paymentIntent, error } = await stripe.confirmCardPayment(
+                            paymentData.clientSecret,
+                            {
+                                payment_method: {
+                                    card: card,
+                                    billing_details: {
+                                        name: orderData.cliente_nombre,
+                                        phone: orderData.cliente_telefono,
+                                        email: orderData.cliente_email
+                                    }
+                                }
+                            }
+                        );
+                        
+                        if (error) {
+                            throw new Error(error.message);
+                        }
+                        
+                        if (paymentIntent.status === 'succeeded') {
+                            orderData.stripe_payment_id = paymentIntent.id;
+                        }
+                    }
+                }
+                
+                // Crear el pedido en la base de datos
+                const orderResponse = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await orderResponse.json();
+                
+                if (result.success) {
+                    // Limpiar carrito
+                    if (typeof cart !== 'undefined' && cart.clear) {
+                        cart.clear();
+                    } else {
+                        localStorage.setItem('carniceria_cart', JSON.stringify([]));
+                    }
+                    
+                    // Mostrar mensaje de éxito
+                    alert(`¡Pedido creado exitosamente!\nCódigo: ${result.order.codigo_pedido}\n\nTe hemos enviado un email de confirmación.`);
+                    
+                    // Redirigir según si es cliente registrado
+                    if (isCustomerAuthenticated) {
+                        window.location.href = '/mis-pedidos';
+                    } else {
+                        window.location.href = '/';
+                    }
+                } else {
+                    throw new Error(result.message || 'Error al crear pedido');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+                
+                const submitBtn = document.getElementById('submit-order');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmar Pedido';
+            }
+        });
+        
+        // Pedido por WhatsApp
+        document.getElementById('whatsapp-order').addEventListener('click', function() {
+            let cartItems = getCartItems();
+            
+            if (!cartItems || cartItems.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const nombre = document.getElementById('cliente_nombre').value || 'Cliente';
+            const telefono = document.getElementById('cliente_telefono').value || '';
+            const direccion = document.getElementById('cliente_direccion').value || '';
+            const ciudad = document.getElementById('cliente_ciudad').value || '';
+            const metodoPago = document.getElementById('metodo_pago').value || 'efectivo';
+            const notas = document.getElementById('notas').value || '';
+            
+            // Construir mensaje
+            let message = `¡Hola! Me gustaría hacer un pedido:\n\n`;
+            message += `*INFORMACIÓN DEL CLIENTE:*\n`;
+            message += `Nombre: ${nombre}\n`;
+            message += `Teléfono: ${telefono}\n`;
+            message += `Dirección: ${direccion}\n`;
+            message += `Ciudad: ${ciudad}\n\n`;
+            
+            message += `*PRODUCTOS:*\n`;
+            cartItems.forEach((item, index) => {
+                message += `${index + 1}. ${item.name} - ${item.quantity}${item.unit} - €${((item.price || 0) * (item.quantity || 0)).toFixed(2)}\n`;
+            });
+            
+            const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+            const iva = total * 0.21;
+            const envio = total > 50 ? 0 : 5;
+            const totalConIvaYEnvio = total + iva + envio;
+            
+            message += `\n*RESUMEN:*\n`;
+            message += `Subtotal: €${total.toFixed(2)}\n`;
+            message += `IVA (21%): €${iva.toFixed(2)}\n`;
+            message += `Envío: €${envio.toFixed(2)}\n`;
+            message += `*TOTAL: €${totalConIvaYEnvio.toFixed(2)}*\n\n`;
+            
+            message += `*MÉTODO DE PAGO:* ${metodoPago}\n`;
+            
+            if (notas) {
+                message += `*NOTAS:* ${notas}\n`;
+            }
+            
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Abrir WhatsApp
+            const whatsappNumber = '<%= whatsapp_number %>';
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+        });
+        
+        // Inicializar página de pedidos
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de pedidos cargada');
+            loadAndRenderCart();
+            initStripe();
+            
+            // Menú móvil (igual que en las otras páginas)
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    this.innerHTML = navMenu.classList.contains('active') 
+                        ? '<i class="fas fa-times"></i>' 
+                        : '<i class="fas fa-bars"></i>';
+                });
+                
+                // Cerrar menú al hacer click en enlace
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navMenu.classList.remove('active');
+                        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                    });
+                });
+            }
+            
+            // También actualizar contador por si acaso
+            if (typeof cart !== 'undefined' && cart.updateCartCount) {
+                cart.updateCartCount();
+            }
+            
+            // Slider de marketing - JavaScript para alternar mensajes
+            const marketingMessages = [
+                { icon: 'fas fa-truck', text: 'Envío GRATIS en pedidos superiores a 50€', badge: 'NUEVO' },
+                { icon: 'fas fa-clock', text: 'Entrega en 24-48 horas en toda Tenerife', badge: null },
+                { icon: 'fas fa-percentage', text: '¡10% de descuento en tu primer pedido!', badge: 'OFERTA' },
+                { icon: 'fas fa-utensils', text: 'Productos 100% frescos y de calidad', badge: null },
+                { icon: 'fas fa-shield-alt', text: 'Compra segura con múltiples métodos de pago', badge: null },
+                { icon: 'fab fa-whatsapp', text: 'Atención personalizada por WhatsApp', badge: null },
+                { icon: 'fas fa-award', text: 'Calidad certificada desde 1990', badge: 'GARANTÍA' },
+                { icon: 'fas fa-leaf', text: 'Productos de proximidad y sostenibles', badge: 'ECO' }
+            ];
+            
+            // Función para actualizar el slider de marketing
+            function updateMarketingSlider() {
+                const track = document.getElementById('marketingTrack');
+                if (!track) return;
+                
+                // Duplicar los mensajes para efecto continuo
+                const allMessages = [...marketingMessages, ...marketingMessages];
+                
+                // Crear HTML del slider
+                let html = '';
+                allMessages.forEach(msg => {
+                    html += `
+                        <div class="marketing-slide">
+                            <i class="${msg.icon}"></i>
+                            <span>${msg.text}</span>
+                            ${msg.badge ? `<span class="marketing-badge">${msg.badge}</span>` : ''}
+                        </div>
+                    `;
+                });
+                
+                track.innerHTML = html;
+            }
+            
+            // Inicializar slider de marketing
+            updateMarketingSlider();
+            
+            // Cambiar mensajes cada 50 segundos (opcional)
+            setInterval(updateMarketingSlider, 50000);
+        });
+    </script>
+</body>
+</html>

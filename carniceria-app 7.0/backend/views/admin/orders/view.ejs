@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Carnicería Tenerife</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .order-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .status-badge-large {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .product-item {
+            border-left: 4px solid #28a745;
+            padding-left: 15px;
+            margin-bottom: 10px;
+        }
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+        }
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            color: white;
+        }
+        .payment-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .payment-pending { background: #ffc107; color: #000; }
+        .payment-completed { background: #28a745; color: #fff; }
+        .payment-failed { background: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header del pedido -->
+        <div class="order-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h4 mb-0">
+                        <i class="fas fa-receipt me-2"></i>
+                        Pedido #<%= order.codigo_pedido %>
+                    </h1>
+                    <p class="mb-0">Creado: <%= formatDateTime(order.created_at) %></p>
+                    <% if (order.payment_id) { %>
+                        <p class="mb-0">
+                            <small>ID Pago: <%= order.payment_id %></small>
+                        </p>
+                    <% } %>
+                </div>
+                <div class="text-end">
+                    <span class="<%= getOrderStatusClass(order.estado) %> status-badge-large">
+                        <%= getOrderStatusText(order.estado) %>
+                    </span>
+                    <div class="mt-2">
+                        <strong class="h3"><%= formatPrice(order.total) %></strong>
+                        <% if (order.pagado) { %>
+                            <br>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> PAGADO
+                            </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <% if (success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <% if (error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <!-- Información del cliente -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-user me-2"></i>Información del Cliente
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title"><%= order.cliente_nombre %></h5>
+                        <p class="card-text">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:<%= order.cliente_telefono %>" class="text-decoration-none">
+                                <%= formatPhone(order.cliente_telefono) %>
+                            </a>
+                        </p>
+                        <% if (order.cliente_email) { %>
+                        <p class="card-text">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:<%= order.cliente_email %>" class="text-decoration-none">
+                                <%= order.cliente_email %>
+                            </a>
+                        </p>
+                        <% } %>
+                        <% if (order.telefono_bizum) { %>
+                        <p class="card-text">
+                            <i class="fas fa-mobile-alt me-2 text-primary"></i>
+                            <span class="text-primary">Bizum: <%= formatPhone(order.telefono_bizum) %></span>
+                        </p>
+                        <% } %>
+                        <hr>
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>Dirección de Entrega</h6>
+                        <p class="mb-1"><%= order.cliente_direccion %></p>
+                        <p class="mb-1"><%= order.cliente_ciudad %></p>
+                        <% if (order.cliente_codigo_postal) { %>
+                            <p class="mb-0">CP: <%= order.cliente_codigo_postal %></p>
+                        <% } %>
+                        <% if (order.fecha_entrega) { %>
+                            <hr>
+                            <h6><i class="fas fa-calendar-alt me-2"></i>Entrega Programada</h6>
+                            <p class="mb-0"><%= formatDate(order.fecha_entrega) %></p>
+                            <% if (order.hora_entrega) { %>
+                                <p class="mb-0">Hora: <%= order.hora_entrega %></p>
+                            <% } %>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Información de pago -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-credit-card me-2"></i>Información de Pago
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">
+                            <strong>Método: </strong>
+                            <span class="badge bg-secondary"><%= order.metodo_pago.toUpperCase() %></span>
+                        </p>
+                        
+                        <% if (order.metodo_pago === 'bizum') { %>
+                            <% if (order.telefono_bizum) { %>
+                                <p class="mb-1">
+                                    <strong>Teléfono Bizum: </strong>
+                                    <%= formatPhone(order.telefono_bizum) %>
+                                </p>
+                            <% } %>
+                            
+                            <% if (order.payment_id) { %>
+                                <p class="mb-1">
+                                    <strong>ID Transacción: </strong>
+                                    <code><%= order.payment_id %></code>
+                                </p>
+                            <% } %>
+                            
+                            <% if (order.payment_status) { %>
+                                <p class="mb-1">
+                                    <strong>Estado Pago: </strong>
+                                    <span class="payment-badge payment-<%= order.payment_status %>">
+                                        <%= order.payment_status.toUpperCase() %>
+                                    </span>
+                                </p>
+                            <% } %>
+                            
+                            <% if (order.pagado) { %>
+                                <p class="mb-1">
+                                    <strong>Pagado: </strong>
+                                    <span class="badge bg-success">SÍ</span>
+                                </p>
+                            <% } else { %>
+                                <p class="mb-1">
+                                    <strong>Pagado: </strong>
+                                    <span class="badge bg-warning">PENDIENTE</span>
+                                </p>
+                            <% } %>
+                            
+                            <% if (order.fecha_pago) { %>
+                                <p class="mb-0">
+                                    <strong>Fecha Pago: </strong>
+                                    <%= formatDateTime(order.fecha_pago) %>
+                                </p>
+                            <% } %>
+                        <% } %>
+                        
+                        <% if (order.stripe_payment_id) { %>
+                            <hr>
+                            <p class="mb-0">
+                                <strong>Stripe ID: </strong>
+                                <small><%= order.stripe_payment_id %></small>
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="card mt-3">
+                    <div class="card-header bg-success text-white">
+                        <i class="fab fa-whatsapp me-2"></i>Comunicación
+                    </div>
+                    <div class="card-body">
+                        <button class="btn whatsapp-btn w-100 mb-2" 
+                                onclick="window.open('https://wa.me/<%= order.cliente_telefono %>?text=Hola%20<%= encodeURIComponent(order.cliente_nombre.split(' ')[0]) %>%2C%20soy%20Carnicería%20Tenerife%20referente%20al%20pedido%20%23<%= order.codigo_pedido %>', '_blank')">
+                            <i class="fab fa-whatsapp me-2"></i>Enviar WhatsApp
+                        </button>
+                        <% if (order.whatsapp_enviado) { %>
+                            <div class="alert alert-success alert-sm mb-0">
+                                <i class="fas fa-check-circle me-1"></i>
+                                WhatsApp enviado anteriormente
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos y actualización -->
+            <div class="col-md-8">
+                <!-- Productos del pedido -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-shopping-basket me-2"></i>Productos del Pedido
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Precio Unit.</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% order.items.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= item.producto.nombre %></strong>
+                                            <div class="text-muted small">
+                                                <%= item.producto.categoria %> | <%= item.producto.unidad %>
+                                                <% if (item.notas) { %>
+                                                    <br><em>Notas: <%= item.notas %></em>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                        <td class="text-center"><%= item.cantidad %></td>
+                                        <td class="text-end"><%= formatPrice(item.precio_unitario) %></td>
+                                        <td class="text-end fw-bold"><%= formatPrice(item.subtotal) %></td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="text-end fw-bold h5"><%= formatPrice(order.total) %></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actualizar estado -->
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-edit me-2"></i>Actualizar Estado del Pedido
+                    </div>
+                    <div class="card-body">
+                        <form action="/admin/orders/<%= order.id %>/status" method="POST">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="estado" class="form-label">Nuevo Estado</label>
+                                    <select name="estado" id="estado" class="form-select" required>
+                                        <option value="pendiente" <%= order.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                        <option value="pendiente_pago" <%= order.estado === 'pendiente_pago' ? 'selected' : '' %>>Pendiente de pago</option>
+                                        <option value="confirmado" <%= order.estado === 'confirmado' ? 'selected' : '' %>>Confirmado</option>
+                                        <option value="preparando" <%= order.estado === 'preparando' ? 'selected' : '' %>>En preparación</option>
+                                        <option value="enviado" <%= order.estado === 'enviado' ? 'selected' : '' %>>Enviado</option>
+                                        <option value="entregado" <%= order.estado === 'entregado' ? 'selected' : '' %>>Entregado</option>
+                                        <option value="cancelado" <%= order.estado === 'cancelado' ? 'selected' : '' %>>Cancelado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="notas_admin" class="form-label">Notas para el cliente (opcional)</label>
+                                    <input type="text" name="notas_admin" id="notas_admin" 
+                                           class="form-control" placeholder="Ej: Pedido listo para recoger...">
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Actualizar Estado
+                                </button>
+                                <a href="/admin/orders" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notas del pedido -->
+                <% if (order.notas) { %>
+                <div class="card mt-3">
+                    <div class="card-header bg-light">
+                        <i class="fas fa-sticky-note me-2"></i>Notas del Pedido
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0"><%= order.notas %></p>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Confirmar cancelación
+        const estadoSelect = document.getElementById('estado');
+        estadoSelect.addEventListener('change', function() {
+            if (this.value === 'cancelado') {
+                if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá el stock de los productos.')) {
+                    this.value = '<%= order.estado %>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

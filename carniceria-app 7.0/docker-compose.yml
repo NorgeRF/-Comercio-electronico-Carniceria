@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11.4
+    container_name: carniceria-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: carniceria_db
+      MYSQL_USER: carniceria
+      MYSQL_PASSWORD: carne123
+      MYSQL_INITDB_SKIP_TZINFO: 1 
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    command: 
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --init-file=/docker-entrypoint-initdb.d/001-initial-schema.sql
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-prootpassword", "carniceria_db", "-e", "SELECT 1;"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  app:
+    build: ./backend
+    container_name: carniceria-app
+    ports:
+      - "3000:3000"
+    env_file:  
+      - ./backend/.env  
+#    environment:
+#      DB_HOST: db
+#      DB_PORT: 3306
+#      DB_USER: carniceria
+#      DB_PASSWORD: carne123
+#      DB_NAME: carniceria_db
+#      DB_DIALECT: mysql
+#      NODE_ENV: development
+#      SESSION_SECRET: carniceria_secret_123456789
+#      WHATSAPP_NUMBER: "+34600000000"
+#      STRIPE_PUBLIC_KEY: pk_test_dummy_key
+      
+      # Configuracion de bcrypt para Alpine
+#      NODE_OPTIONS: "--max-old-space-size=256"
+#      BCRYPT_SALT_ROUNDS: "10"
+      
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+      echo '? Esperando que la base de datos este completamente lista...' &&
+      sleep 25 &&
+      echo '? Base de datos lista, iniciando aplicacion...' &&
+      npm start
+      "
+
+volumes:
+  db_data:

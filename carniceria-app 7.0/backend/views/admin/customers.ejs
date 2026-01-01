@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Panel de Administración</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            background: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .admin-brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #444;
+            text-align: center;
+        }
+        
+        .admin-brand h2 {
+            color: white;
+            margin: 0;
+        }
+        
+        .admin-nav {
+            padding: 20px 0;
+        }
+        
+        .admin-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .admin-nav a i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .admin-main {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card-sm {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number-sm {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label-sm {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .customers-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .customers-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .customers-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .customers-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        
+        .customer-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .customer-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-verified {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-unverified {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: nowrap;
+        }
+        
+        .btn-xs {
+            padding: 3px 8px;
+            font-size: 0.75rem;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .page-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                display: none;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 3px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-brand">
+                <h2><i class="fas fa-utensils"></i> Admin Panel</h2>
+                <p>Carnicería Tenerife</p>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="/admin">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/admin/products">
+                    <i class="fas fa-drumstick-bite"></i> Productos
+                </a>
+                <a href="/admin/orders">
+                    <i class="fas fa-shopping-cart"></i> Pedidos
+                </a>
+                <a href="/admin/customers" class="active">
+                    <i class="fas fa-users"></i> Clientes
+                </a>
+                <a href="/admin/orders/report">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+                <a href="/admin/payments">
+                    <i class="fas fa-credit-card"></i> Pagos
+                </a>
+                <a href="/admin/settings">
+                    <i class="fas fa-cog"></i> Configuración
+                </a>
+            </nav>
+            
+            <div class="logout-btn">
+                <a href="/admin/logout" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main">
+            <div class="admin-header">
+                <div>
+                    <h1><i class="fas fa-users me-2"></i><%= title %></h1>
+                    <p class="text-muted">Gestión de clientes de la carnicería</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="showNewCustomerModal()">
+                        <i class="fas fa-plus me-2"></i>Nuevo Cliente
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="exportCustomers()">
+                        <i class="fas fa-file-export me-2"></i>Exportar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mensajes -->
+            <% if (success_msg && success_msg.length > 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <% if (error_msg && error_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <!-- Estadísticas rápidas -->
+            <div class="stats-cards">
+                <div class="stat-card-sm">
+                    <div class="stat-number-sm"><%= stats?.total || 0 %></div>
+                    <div class="stat-label-sm">Total Clientes</div>
+                </div>
+                <div class="stat-card-sm">
+                    <div class="stat-number-sm"><%= stats?.activos || 0 %></div>
+                    <div class="stat-label-sm">Clientes Activos</div>
+                </div>
+                <div class="stat-card-sm">
+                    <div class="stat-number-sm"><%= stats?.verificados || 0 %></div>
+                    <div class="stat-label-sm">Clientes Verificados</div>
+                </div>
+                <div class="stat-card-sm">
+                    <div class="stat-number-sm">
+                        <% if (stats?.promedio_compras) { %>
+                            €<%= parseFloat(stats.promedio_compras || 0).toFixed(2) %>
+                        <% } else { %>
+                            0€
+                        <% } %>
+                    </div>
+                    <div class="stat-label-sm">Promedio Compras</div>
+                </div>
+            </div>
+            
+            <!-- Filtros y búsqueda -->
+            <div class="filters">
+                <form method="GET" action="/admin/customers" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" name="search" placeholder="Buscar por nombre, email o teléfono..." value="<%= search || '' %>">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="sortBy">
+                            <option value="fecha_registro" <%= sortBy === 'fecha_registro' ? 'selected' : '' %>>Fecha Registro</option>
+                            <option value="nombre" <%= sortBy === 'nombre' ? 'selected' : '' %>>Nombre</option>
+                            <option value="total_compras" <%= sortBy === 'total_compras' ? 'selected' : '' %>>Total Compras</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="order">
+                            <option value="DESC" <%= order === 'DESC' ? 'selected' : '' %>>Descendente</option>
+                            <option value="ASC" <%= order === 'ASC' ? 'selected' : '' %>>Ascendente</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Tabla de clientes -->
+            <div class="customers-table">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Contacto</th>
+                                <th>Compras</th>
+                                <th>Pedidos</th>
+                                <th>Registro</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (customers && customers.length > 0) { %>
+                                <% customers.forEach(customer => { %>
+                                    <tr class="customer-row">
+                                        <td>
+                                            <div class="customer-info">
+                                                <div class="customer-avatar">
+                                                    <%= customer.nombre.charAt(0).toUpperCase() %>
+                                                </div>
+                                                <div>
+                                                    <strong><%= customer.nombre %></strong>
+                                                    <% if (customer.ciudad) { %>
+                                                        <br><small class="text-muted"><%= customer.ciudad %></small>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div><i class="fas fa-envelope me-1"></i> <%= customer.email %></div>
+                                            <% if (customer.telefono) { %>
+                                                <div><i class="fas fa-phone me-1"></i> <%= customer.telefono %></div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <strong>€<%= (customer.total_compras || 0).toFixed(2) %></strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary"><%= customer.cantidad_pedidos || 0 %></span>
+                                        </td>
+                                        <td>
+                                            <%= new Date(customer.fecha_registro).toLocaleDateString('es-ES') %>
+                                            <% if (customer.ultimo_acceso) { %>
+                                                <br>
+                                                <small class="text-muted">
+                                                    Último: <%= new Date(customer.ultimo_acceso).toLocaleDateString('es-ES') %>
+                                                </small>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                <% if (customer.activo) { %>
+                                                    <span class="status-badge status-active">Activo</span>
+                                                <% } else { %>
+                                                    <span class="status-badge status-inactive">Inactivo</span>
+                                                <% } %>
+                                                
+                                                <% if (customer.verificado) { %>
+                                                    <span class="status-badge status-verified">Verificado</span>
+                                                <% } else { %>
+                                                    <span class="status-badge status-unverified">No Verificado</span>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="/admin/customers/<%= customer.id %>" class="btn btn-primary btn-xs" title="Ver Detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="mailto:<%= customer.email %>" class="btn btn-info btn-xs" title="Enviar Email">
+                                                    <i class="fas fa-envelope"></i>
+                                                </a>
+                                                <% if (customer.telefono) { %>
+                                                    <a href="https://wa.me/<%= customer.telefono.replace(/\D/g, '') %>" class="btn btn-success btn-xs" target="_blank" title="WhatsApp">
+                                                        <i class="fab fa-whatsapp"></i>
+                                                    </a>
+                                                <% } %>
+                                                <button class="btn btn-warning btn-xs" onclick="editCustomer(<%= customer.id %>)" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <% if (customer.activo) { %>
+                                                    <button class="btn btn-danger btn-xs" onclick="deleteCustomer(<%= customer.id %>)" title="Desactivar">
+                                                        <i class="fas fa-user-slash"></i>
+                                                    </button>
+                                                <% } else { %>
+                                                    <button class="btn btn-success btn-xs" onclick="activateCustomer(<%= customer.id %>)" title="Activar">
+                                                        <i class="fas fa-user-check"></i>
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">No se encontraron clientes</p>
+                                        <button class="btn btn-primary" onclick="showNewCustomerModal()">
+                                            <i class="fas fa-plus me-2"></i>Agregar Primer Cliente
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Paginación -->
+            <% if (pagination.totalPages > 1) { %>
+                <div class="pagination">
+                    <% if (pagination.currentPage > 1) { %>
+                        <a href="/admin/customers?page=<%= pagination.currentPage - 1 %>&search=<%= search %>&sortBy=<%= sortBy %>&order=<%= order %>" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    <% } %>
+                    
+                    <span class="page-info">
+                        Página <%= pagination.currentPage %> de <%= pagination.totalPages %>
+                        (<%= pagination.totalCustomers %> clientes)
+                    </span>
+                    
+                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                        <a href="/admin/customers?page=<%= pagination.currentPage + 1 %>&search=<%= search %>&sortBy=<%= sortBy %>&order=<%= order %>" class="btn btn-outline-primary btn-sm">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+            
+            <!-- Modal para nuevo cliente -->
+            <div id="newCustomerModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-user-plus me-2"></i>Nuevo Cliente</h3>
+                        <button class="close-btn" onclick="closeNewCustomerModal()">&times;</button>
+                    </div>
+                    <form id="newCustomerForm" action="/admin/customers" method="POST">
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre completo *</label>
+                                    <input type="text" class="form-control" name="nombre" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" name="telefono">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" class="form-control" name="ciudad">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" class="form-control" name="direccion">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Código Postal</label>
+                                    <input type="text" class="form-control" name="codigo_postal">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="closeNewCustomerModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Crear Cliente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Modal functions
+        function showNewCustomerModal() {
+            document.getElementById('newCustomerModal').style.display = 'block';
+        }
+        
+        function closeNewCustomerModal() {
+            document.getElementById('newCustomerModal').style.display = 'none';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('newCustomerModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Editar cliente
+        function editCustomer(customerId) {
+            window.location.href = `/admin/customers/${customerId}`;
+        }
+        
+        // Desactivar cliente
+        async function deleteCustomer(customerId) {
+            if (confirm('¿Desactivar este cliente? El cliente no podrá acceder al sistema.')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Cliente desactivado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al desactivar cliente');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Activar cliente
+        async function activateCustomer(customerId) {
+            if (confirm('¿Activar este cliente?')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/restore`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Cliente activado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al activar cliente');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Exportar clientes a CSV
+        async function exportCustomers() {
+            try {
+                const response = await fetch('/api/customers/export');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error exportando clientes');
+                console.error(error);
+            }
+        }
+        
+        // Buscar clientes en tiempo real (para autocompletar)
+        let searchTimeout;
+        function searchCustomers(query) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                if (query.length >= 2) {
+                    try {
+                        const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}`);
+                        const customers = await response.json();
+                        // Implementar autocompletado si es necesario
+                        console.log('Clientes encontrados:', customers);
+                    } catch (error) {
+                        console.error('Error buscando clientes:', error);
+                    }
+                }
+            }, 300);
+        }
+    </script>
+</body>
+</html>

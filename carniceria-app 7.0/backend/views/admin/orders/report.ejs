@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Carnicería Tenerife</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Librerías para exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        .card-report {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .card-report:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .date-filter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .badge-sales {
+            font-size: 0.9em;
+            padding: 5px 10px;
+        }
+        .export-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .export-btn {
+            min-width: 150px;
+            margin: 5px;
+        }
+        .print-only {
+            display: none;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-confirmado { background: #17a2b8; color: #fff; }
+        .status-preparando { background: #007bff; color: #fff; }
+        .status-enviado { background: #6f42c1; color: #fff; }
+        .status-entregado { background: #28a745; color: #fff; }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .card-report {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            .btn {
+                display: none;
+            }
+            body {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+            <h1 class="h3">
+                <i class="fas fa-chart-bar me-2"></i>
+                <%= title %>
+            </h1>
+            <div>
+                <a href="/admin/orders" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left"></i> Volver a Pedidos
+                </a>
+                <a href="/admin" class="btn btn-outline-primary">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <% if (success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <% if (error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <!-- Cabecera para impresión -->
+        <div class="print-only text-center mb-4">
+            <h2>Carnicería Tenerife</h2>
+            <h3>Reporte de Ventas (Pedidos Confirmados)</h3>
+            <p>Período: <%= fecha_inicio || 'Últimos 30 días' %> - <%= fecha_fin || 'Hoy' %></p>
+            <p>Generado: <%= new Date().toLocaleDateString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) %></p>
+        </div>
+
+        <!-- Sección de Exportación -->
+        <div class="export-section no-print">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4><i class="fas fa-download me-2"></i>Exportar Reporte</h4>
+                    <p class="mb-0">Descarga el reporte en diferentes formatos</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light export-btn" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-success export-btn" id="exportExcelBtn">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </button>
+                        <button class="btn btn-danger export-btn" id="exportPdfBtn">
+                            <i class="fas fa-file-pdf me-2"></i>PDF
+                        </button>
+                        <button class="btn btn-warning export-btn" id="exportCsvBtn">
+                            <i class="fas fa-file-csv me-2"></i>CSV
+                        </button>
+                        <button class="btn btn-info export-btn" id="exportJsonBtn">
+                            <i class="fas fa-file-code me-2"></i>JSON
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="includeCharts" checked>
+                            <label class="form-check-label" for="includeCharts">
+                                Incluir gráficos
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="includeTables" checked>
+                            <label class="form-check-label" for="includeTables">
+                                Incluir tablas
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="includeStats" checked>
+                            <label class="form-check-label" for="includeStats">
+                                Incluir estadísticas
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros de fecha -->
+        <div class="date-filter no-print">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
+                           value="<%= fecha_inicio || '' %>" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
+                           value="<%= fecha_fin || '' %>" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                        <a href="/admin/orders/report" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Últimos 30 días
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resumen de ventas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card card-report">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Pedidos Confirmados</h5>
+                        <h2 class="text-primary">
+                            <% 
+                            const totalPedidos = ordersByDay.reduce((sum, day) => sum + parseInt(day.get('total_pedidos') || 0), 0);
+                            %>
+                            <%= totalPedidos %>
+                        </h2>
+                        <p class="text-muted mb-0">Pedidos confirmados/completados</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card card-report">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Ventas Totales</h5>
+                        <h2 class="text-success">
+                            <% 
+                            const ventasTotales = ordersByDay.reduce((sum, day) => sum + parseFloat(day.get('venta_total') || 0), 0);
+                            %>
+                            <%= formatPrice(ventasTotales) %>
+                        </h2>
+                        <p class="text-muted mb-0">Ingresos confirmados</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card card-report">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Ticket Promedio</h5>
+                        <h2 class="text-info">
+                            <% 
+                            const ticketPromedio = totalPedidos > 0 ? ventasTotales / totalPedidos : 0;
+                            %>
+                            <%= formatPrice(ticketPromedio) %>
+                        </h2>
+                        <p class="text-muted mb-0">Por pedido confirmado</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card card-report">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Días con Ventas</h5>
+                        <h2 class="text-warning"><%= ordersByDay.length %></h2>
+                        <p class="text-muted mb-0">Días con ventas confirmadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de ventas por estado -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card card-report">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-chart-pie me-2"></i>Ventas por Estado
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <% if (statsByStatus && statsByStatus.length > 0) { %>
+                                <% statsByStatus.forEach(stat => { %>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>
+                                        <span class="<%= getOrderStatusClass(stat.estado) %> status-badge me-2">
+                                            <%= getOrderStatusText(stat.estado) %>
+                                        </span>
+                                    </span>
+                                    <span class="badge bg-secondary">
+                                        <%= stat.get('count') %> pedidos
+                                    </span>
+                                    <span class="fw-bold text-success">
+                                        <%= formatPrice(stat.get('total')) %>
+                                    </span>
+                                </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No hay datos de ventas por estado
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card card-report">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-credit-card me-2"></i>Métodos de Pago
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="paymentChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <% if (paymentMethods && paymentMethods.length > 0) { %>
+                                <% paymentMethods.forEach(method => { %>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><%= method.metodo_pago %></span>
+                                    <span class="badge bg-success">
+                                        <%= formatPrice(method.get('total_ingresos')) %>
+                                    </span>
+                                </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No hay datos de métodos de pago
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de ventas diarias -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-report">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-chart-line me-2"></i>Ventas por Día (Confirmadas)
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de ventas diarias -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-report">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-table me-2"></i>Detalle de Ventas por Día (Confirmadas)
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="salesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th class="text-center">Pedidos</th>
+                                        <th class="text-end">Ventas Totales</th>
+                                        <th class="text-end">Ticket Promedio</th>
+                                        <th class="text-end">Venta Mínima</th>
+                                        <th class="text-end">Venta Máxima</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (ordersByDay && ordersByDay.length > 0) { %>
+                                        <% ordersByDay.forEach(day => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><%= formatDate(day.get('fecha')) %></strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <%= new Date(day.get('fecha')).toLocaleDateString('es-ES', { weekday: 'long' }) %>
+                                                </small>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary badge-sales">
+                                                    <%= day.get('total_pedidos') %>
+                                                </span>
+                                            </td>
+                                            <td class="text-end fw-bold text-success">
+                                                <%= formatPrice(day.get('venta_total')) %>
+                                            </td>
+                                            <td class="text-end">
+                                                <%= formatPrice(day.get('promedio_venta')) %>
+                                            </td>
+                                            <td class="text-end text-muted">
+                                                <%= formatPrice(day.get('venta_minima') || 0) %>
+                                            </td>
+                                            <td class="text-end text-muted">
+                                                <%= formatPrice(day.get('venta_maxima') || 0) %>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                No hay datos de ventas confirmadas para el período seleccionado
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                                <% if (ordersByDay && ordersByDay.length > 0) { %>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th>TOTALES</th>
+                                        <th class="text-center"><%= totalPedidos %></th>
+                                        <th class="text-end fw-bold text-success"><%= formatPrice(ventasTotales) %></th>
+                                        <th class="text-end"><%= formatPrice(ticketPromedio) %></th>
+                                        <th class="text-end">-</th>
+                                        <th class="text-end">-</th>
+                                    </tr>
+                                </tfoot>
+                                <% } %>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos más vendidos -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-report">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-star me-2"></i>Top 10 Productos Más Vendidos (Confirmados)
+                    </div>
+                    <div class="card-body">
+                        <% if (topProducts && topProducts.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="productsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th class="text-center">Cantidad Vendida</th>
+                                        <th class="text-end">Ingresos Totales</th>
+                                        <th class="text-center">Promedio por Unidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% topProducts.forEach((product, index) => { 
+                                        const producto = product.producto;
+                                        const totalVendido = parseFloat(product.get('total_vendido') || 0);
+                                        const ingresoTotal = parseFloat(product.get('ingreso_total') || 0);
+                                        const promedio = totalVendido > 0 ? ingresoTotal / totalVendido : 0;
+                                    %>
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary rounded-circle">
+                                                <%= index + 1 %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong><%= producto ? producto.nombre : 'Producto Desconocido' %></strong>
+                                            <% if (producto) { %>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-<%= getProductIcon(producto.categoria) %> me-1"></i>
+                                                <%= producto.categoria %>
+                                            </small>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <%= producto ? producto.categoria : 'N/A' %>
+                                            </span>
+                                        </td>
+                                        <td class="text-center fw-bold">
+                                            <%= totalVendido.toFixed(2) %>
+                                            <br>
+                                            <small class="text-muted">
+                                                <%= producto ? producto.unidad : 'unidades' %>
+                                            </small>
+                                        </td>
+                                        <td class="text-end fw-bold text-success">
+                                            <%= formatPrice(ingresoTotal) %>
+                                        </td>
+                                        <td class="text-center">
+                                            <%= formatPrice(promedio) %>
+                                            <br>
+                                            <small class="text-muted">
+                                                por <%= producto ? producto.unidad : 'unidad' %>
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay datos de productos vendidos (confirmados) para el período seleccionado
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métodos de pago detallados -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-report">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-money-bill-wave me-2"></i>Métodos de Pago Detallados (Confirmados)
+                    </div>
+                    <div class="card-body">
+                        <% if (paymentMethods && paymentMethods.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="paymentMethodsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Método de Pago</th>
+                                        <th class="text-center">Pedidos</th>
+                                        <th class="text-end">Ingresos Totales</th>
+                                        <th class="text-end">% del Total</th>
+                                        <th class="text-end">Ticket Promedio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% 
+                                    let totalIngresos = 0;
+                                    paymentMethods.forEach(method => {
+                                        totalIngresos += parseFloat(method.get('total_ingresos') || 0);
+                                    });
+                                    
+                                    paymentMethods.forEach(method => {
+                                        const ingresos = parseFloat(method.get('total_ingresos') || 0);
+                                        const pedidos = parseInt(method.get('total_pedidos') || 0);
+                                        const porcentaje = totalIngresos > 0 ? (ingresos / totalIngresos * 100) : 0;
+                                        const promedio = pedidos > 0 ? ingresos / pedidos : 0;
+                                    %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= method.metodo_pago.toUpperCase() %></strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary"><%= pedidos %></span>
+                                        </td>
+                                        <td class="text-end fw-bold text-success">
+                                            <%= formatPrice(ingresos) %>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: <%= porcentaje %>%"
+                                                     aria-valuenow="<%= porcentaje %>" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    <%= porcentaje.toFixed(1) %>%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <%= formatPrice(promedio) %>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th>TOTALES</th>
+                                        <th class="text-center">
+                                            <%= paymentMethods.reduce((sum, method) => sum + parseInt(method.get('total_pedidos') || 0), 0) %>
+                                        </th>
+                                        <th class="text-end fw-bold text-success">
+                                            <%= formatPrice(totalIngresos) %>
+                                        </th>
+                                        <th class="text-end">100%</th>
+                                        <th class="text-end">
+                                            <% 
+                                            const totalPedidosPago = paymentMethods.reduce((sum, method) => sum + parseInt(method.get('total_pedidos') || 0), 0);
+                                            const promedioTotal = totalPedidosPago > 0 ? totalIngresos / totalPedidosPago : 0;
+                                            %>
+                                            <%= formatPrice(promedioTotal) %>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay datos de métodos de pago (confirmados)
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del reporte -->
+        <div class="row mt-4 no-print">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-info-circle me-2"></i>Información del Reporte
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Período del reporte:</strong></p>
+                                <p>Desde: <strong><%= fecha_inicio || 'Últimos 30 días' %></strong></p>
+                                <p>Hasta: <strong><%= fecha_fin || 'Hoy' %></strong></p>
+                                <p>Días con ventas: <strong><%= ordersByDay ? ordersByDay.length : 0 %></strong></p>
+                                <p><em class="text-muted">Nota: Solo incluye pedidos confirmados y completados</em></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Estadísticas clave:</strong></p>
+                                <p>Pedidos confirmados: <strong><%= totalPedidos %></strong></p>
+                                <p>Ingresos confirmados: <strong><%= formatPrice(ventasTotales) %></strong></p>
+                                <p>Ticket promedio: <strong><%= formatPrice(ticketPromedio) %></strong></p>
+                                <p>Productos analizados: <strong><%= topProducts ? topProducts.length : 0 %></strong></p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Reporte generado el <%= new Date().toLocaleDateString('es-ES', { 
+                                    day: '2-digit', 
+                                    month: '2-digit', 
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) %>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // ============================================
+        // DATOS PARA EXPORTACIÓN
+        // ============================================
+        const reportData = {
+            titulo: 'Reporte de Ventas - Carnicería Tenerife',
+            subtitulo: 'Pedidos Confirmados y Completados',
+            periodo: {
+                inicio: '<%= fecha_inicio || "Últimos 30 días" %>',
+                fin: '<%= fecha_fin || "Hoy" %>',
+                generado: new Date().toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            },
+            estadisticas: {
+                totalPedidos: <%= totalPedidos %>,
+                ventasTotales: <%= ventasTotales %>,
+                ticketPromedio: <%= ticketPromedio %>,
+                diasConVentas: <%= ordersByDay ? ordersByDay.length : 0 %>
+            },
+            ventasPorDia: [
+                <% if (ordersByDay && ordersByDay.length > 0) { %>
+                    <% ordersByDay.forEach((day, index) => { %>
+                    {
+                        fecha: '<%= formatDate(day.get("fecha")) %>',
+                        diaSemana: '<%= new Date(day.get("fecha")).toLocaleDateString("es-ES", { weekday: "long" }) %>',
+                        pedidos: <%= day.get('total_pedidos') || 0 %>,
+                        ventaTotal: <%= day.get('venta_total') || 0 %>,
+                        promedioVenta: <%= day.get('promedio_venta') || 0 %>,
+                        ventaMinima: <%= day.get('venta_minima') || 0 %>,
+                        ventaMaxima: <%= day.get('venta_maxima') || 0 %>
+                    }<%= index < ordersByDay.length - 1 ? ',' : '' %>
+                    <% }); %>
+                <% } %>
+            ],
+            ventasPorEstado: [
+                <% if (statsByStatus && statsByStatus.length > 0) { %>
+                    <% statsByStatus.forEach((stat, index) => { %>
+                    {
+                        estado: '<%= stat.estado %>',
+                        estadoTexto: '<%= getOrderStatusText(stat.estado) %>',
+                        pedidos: <%= stat.get('count') || 0 %>,
+                        ventas: <%= stat.get('total') || 0 %>
+                    }<%= index < statsByStatus.length - 1 ? ',' : '' %>
+                    <% }); %>
+                <% } %>
+            ],
+            productosMasVendidos: [
+                <% if (topProducts && topProducts.length > 0) { %>
+                    <% topProducts.forEach((product, index) => { 
+                        const producto = product.producto;
+                        const totalVendido = parseFloat(product.get('total_vendido') || 0);
+                        const ingresoTotal = parseFloat(product.get('ingreso_total') || 0);
+                        const promedio = totalVendido > 0 ? ingresoTotal / totalVendido : 0;
+                    %>
+                    {
+                        posicion: <%= index + 1 %>,
+                        nombre: '<%= producto ? producto.nombre.replace(/'/g, "\\'") : "Producto Desconocido" %>',
+                        categoria: '<%= producto ? producto.categoria : "N/A" %>',
+                        unidad: '<%= producto ? producto.unidad : "unidades" %>',
+                        cantidadVendida: <%= totalVendido %>,
+                        ingresosTotales: <%= ingresoTotal %>,
+                        promedioPorUnidad: <%= promedio %>
+                    }<%= index < topProducts.length - 1 ? ',' : '' %>
+                    <% }); %>
+                <% } %>
+            ],
+            metodosPago: [
+                <% if (paymentMethods && paymentMethods.length > 0) { %>
+                    <% 
+                    let totalIngresosExport = 0;
+                    paymentMethods.forEach(method => {
+                        totalIngresosExport += parseFloat(method.get('total_ingresos') || 0);
+                    });
+                    
+                    paymentMethods.forEach((method, index) => {
+                        const ingresos = parseFloat(method.get('total_ingresos') || 0);
+                        const pedidos = parseInt(method.get('total_pedidos') || 0);
+                        const porcentaje = totalIngresosExport > 0 ? (ingresos / totalIngresosExport * 100) : 0;
+                        const promedio = pedidos > 0 ? ingresos / pedidos : 0;
+                    %>
+                    {
+                        metodo: '<%= method.metodo_pago.toUpperCase() %>',
+                        pedidos: <%= pedidos %>,
+                        ingresos: <%= ingresos %>,
+                        porcentaje: <%= porcentaje %>,
+                        promedioTicket: <%= promedio %>
+                    }<%= index < paymentMethods.length - 1 ? ',' : '' %>
+                    <% }); %>
+                <% } %>
+            ]
+        };
+
+        // ============================================
+        // GRÁFICOS
+        // ============================================
+
+        // Gráfico de ventas por estado
+        <% if (statsByStatus && statsByStatus.length > 0) { %>
+        const statusCtx = document.getElementById('statusChart')?.getContext('2d');
+        if (statusCtx) {
+            const statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: [
+                        <% statsByStatus.forEach((stat, index) => { %>
+                            '<%= getOrderStatusText(stat.estado) %>'<%= index < statsByStatus.length - 1 ? ',' : '' %>
+                        <% }); %>
+                    ],
+                    datasets: [{
+                        data: [
+                            <% statsByStatus.forEach((stat, index) => { %>
+                                <%= stat.get('total') || 0 %><%= index < statsByStatus.length - 1 ? ',' : '' %>
+                            <% }); %>
+                        ],
+                        backgroundColor: [
+                            '#17a2b8', // confirmado - azul
+                            '#007bff', // preparando - azul oscuro
+                            '#6f42c1', // enviado - púrpura
+                            '#28a745'  // entregado - verde
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+        <% } %>
+
+        // Gráfico de métodos de pago
+        <% if (paymentMethods && paymentMethods.length > 0) { %>
+        const paymentCtx = document.getElementById('paymentChart')?.getContext('2d');
+        if (paymentCtx) {
+            const paymentChart = new Chart(paymentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        <% paymentMethods.forEach((method, index) => { %>
+                            '<%= method.metodo_pago.toUpperCase() %>'<%= index < paymentMethods.length - 1 ? ',' : '' %>
+                        <% }); %>
+                    ],
+                    datasets: [{
+                        data: [
+                            <% paymentMethods.forEach((method, index) => { %>
+                                <%= method.get('total_ingresos') || 0 %><%= index < paymentMethods.length - 1 ? ',' : '' %>
+                            <% }); %>
+                        ],
+                        backgroundColor: [
+                            '#007bff', '#28a745', '#ffc107', '#dc3545',
+                            '#6f42c1', '#17a2b8', '#fd7e14', '#20c997'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+        <% } %>
+
+        // Gráfico de ventas diarias
+        <% if (ordersByDay && ordersByDay.length > 0) { %>
+        const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+        if (salesCtx) {
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        <% ordersByDay.forEach((day, index) => { %>
+                            '<%= formatDate(day.get("fecha")) %>'<%= index < ordersByDay.length - 1 ? ',' : '' %>
+                        <% }); %>
+                    ],
+                    datasets: [{
+                        label: 'Ventas Totales (€)',
+                        data: [
+                            <% ordersByDay.forEach((day, index) => { %>
+                                <%= day.get('venta_total') || 0 %><%= index < ordersByDay.length - 1 ? ',' : '' %>
+                            <% }); %>
+                        ],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ventas (€)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value.toLocaleString('es-ES', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += '€' + context.parsed.y.toLocaleString('es-ES', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        <% } %>
+
+        // ============================================
+        // FUNCIONES DE EXPORTACIÓN
+        // ============================================
+
+        // 1. Exportar a Excel
+        document.getElementById('exportExcelBtn').addEventListener('click', function() {
+            exportToExcel();
+        });
+
+        function exportToExcel() {
+            try {
+                // Crear un nuevo libro de trabajo
+                const wb = XLSX.utils.book_new();
+                
+                // Hoja 1: Resumen
+                const summaryData = [
+                    ['REPORTE DE VENTAS - CARNICERÍA TENERIFE'],
+                    ['Pedidos Confirmados y Completados'],
+                    [''],
+                    ['Período:', reportData.periodo.inicio, 'a', reportData.periodo.fin],
+                    ['Generado:', reportData.periodo.generado],
+                    [''],
+                    ['ESTADÍSTICAS PRINCIPALES'],
+                    ['Pedidos confirmados:', reportData.estadisticas.totalPedidos],
+                    ['Ventas totales:', reportData.estadisticas.ventasTotales.toFixed(2) + ' €'],
+                    ['Ticket promedio:', reportData.estadisticas.ticketPromedio.toFixed(2) + ' €'],
+                    ['Días con ventas:', reportData.estadisticas.diasConVentas],
+                    [''],
+                    ['VENTAS POR ESTADO']
+                ];
+                
+                // Añadir ventas por estado
+                reportData.ventasPorEstado.forEach(stat => {
+                    summaryData.push([
+                        stat.estadoTexto,
+                        stat.pedidos + ' pedidos',
+                        stat.ventas.toFixed(2) + ' €'
+                    ]);
+                });
+                
+                summaryData.push(['', '', '']);
+                summaryData.push(['MÉTODOS DE PAGO']);
+                
+                // Añadir métodos de pago al resumen
+                reportData.metodosPago.forEach(method => {
+                    summaryData.push([
+                        method.metodo,
+                        method.pedidos + ' pedidos',
+                        method.ingresos.toFixed(2) + ' €',
+                        method.porcentaje.toFixed(1) + '%'
+                    ]);
+                });
+                
+                const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+                
+                // Hoja 2: Ventas por día
+                const dailyData = [
+                    ['Fecha', 'Día', 'Pedidos', 'Ventas Totales (€)', 'Ticket Promedio (€)', 'Venta Mínima (€)', 'Venta Máxima (€)']
+                ];
+                
+                reportData.ventasPorDia.forEach(day => {
+                    dailyData.push([
+                        day.fecha,
+                        day.diaSemana,
+                        day.pedidos,
+                        day.ventaTotal,
+                        day.promedioVenta,
+                        day.ventaMinima,
+                        day.ventaMaxima
+                    ]);
+                });
+                
+                // Añadir totales
+                dailyData.push([
+                    'TOTALES',
+                    '',
+                    reportData.estadisticas.totalPedidos,
+                    reportData.estadisticas.ventasTotales,
+                    reportData.estadisticas.ticketPromedio,
+                    '',
+                    ''
+                ]);
+                
+                const wsDaily = XLSX.utils.aoa_to_sheet(dailyData);
+                XLSX.utils.book_append_sheet(wb, wsDaily, 'Ventas por Día');
+                
+                // Hoja 3: Productos más vendidos
+                const productsData = [
+                    ['#', 'Producto', 'Categoría', 'Unidad', 'Cantidad Vendida', 'Ingresos Totales (€)', 'Promedio por Unidad (€)']
+                ];
+                
+                reportData.productosMasVendidos.forEach(product => {
+                    productsData.push([
+                        product.posicion,
+                        product.nombre,
+                        product.categoria,
+                        product.unidad,
+                        product.cantidadVendida,
+                        product.ingresosTotales,
+                        product.promedioPorUnidad
+                    ]);
+                });
+                
+                const wsProducts = XLSX.utils.aoa_to_sheet(productsData);
+                XLSX.utils.book_append_sheet(wb, wsProducts, 'Productos Más Vendidos');
+                
+                // Hoja 4: Métodos de pago detallados
+                const paymentDetailsData = [
+                    ['Método de Pago', 'Pedidos', 'Ingresos Totales (€)', '% del Total', 'Ticket Promedio (€)']
+                ];
+                
+                reportData.metodosPago.forEach(method => {
+                    paymentDetailsData.push([
+                        method.metodo,
+                        method.pedidos,
+                        method.ingresos.toFixed(2),
+                        method.porcentaje.toFixed(1) + '%',
+                        method.promedioTicket.toFixed(2)
+                    ]);
+                });
+                
+                // Calcular totales para métodos de pago
+                const totalPedidosPago = reportData.metodosPago.reduce((sum, method) => sum + method.pedidos, 0);
+                const totalIngresosPago = reportData.metodosPago.reduce((sum, method) => sum + method.ingresos, 0);
+                const promedioTotalPago = totalPedidosPago > 0 ? totalIngresosPago / totalPedidosPago : 0;
+                
+                paymentDetailsData.push([
+                    'TOTALES',
+                    totalPedidosPago,
+                    totalIngresosPago.toFixed(2),
+                    '100%',
+                    promedioTotalPago.toFixed(2)
+                ]);
+                
+                const wsPaymentDetails = XLSX.utils.aoa_to_sheet(paymentDetailsData);
+                XLSX.utils.book_append_sheet(wb, wsPaymentDetails, 'Métodos de Pago');
+                
+                // Ajustar anchos de columna
+                const wscols = [
+                    { wch: 20 }, // Ancho para fecha
+                    { wch: 15 }, // Ancho para día
+                    { wch: 10 }, // Ancho para pedidos
+                    { wch: 15 }, // Ancho para ventas
+                    { wch: 15 }, // Ancho para promedio
+                    { wch: 15 }, // Ancho para mínimo
+                    { wch: 15 }  // Ancho para máximo
+                ];
+                
+                wsDaily['!cols'] = wscols;
+                
+                // Generar nombre del archivo
+                const fileName = `Reporte_Ventas_${reportData.periodo.inicio}_${reportData.periodo.fin}.xlsx`;
+                
+                // Exportar
+                XLSX.writeFile(wb, fileName);
+                
+                showNotification('✅ Reporte exportado a Excel correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al exportar a Excel:', error);
+                showNotification('❌ Error al exportar a Excel', 'danger');
+            }
+        }
+
+        // 2. Exportar a PDF
+        document.getElementById('exportPdfBtn').addEventListener('click', async function() {
+            exportToPDF();
+        });
+
+        async function exportToPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // Configuración
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                let yPos = 20;
+                
+                // Título principal
+                doc.setFontSize(20);
+                doc.setTextColor(0, 0, 0);
+                doc.text('REPORTE DE VENTAS', pageWidth / 2, yPos, { align: 'center' });
+                doc.setFontSize(14);
+                yPos += 8;
+                doc.text('Carnicería Tenerife', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 6;
+                doc.setFontSize(12);
+                doc.text('Pedidos Confirmados y Completados', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 5;
+                doc.setFontSize(10);
+                doc.text(`Período: ${reportData.periodo.inicio} - ${reportData.periodo.fin}`, pageWidth / 2, yPos, { align: 'center' });
+                yPos += 5;
+                doc.text(`Generado: ${reportData.periodo.generado}`, pageWidth / 2, yPos, { align: 'center' });
+                yPos += 15;
+                
+                // Línea separadora
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.5);
+                doc.line(20, yPos, pageWidth - 20, yPos);
+                yPos += 10;
+                
+                // Estadísticas principales
+                doc.setFontSize(16);
+                doc.setTextColor(41, 128, 185);
+                doc.text('ESTADÍSTICAS PRINCIPALES', 20, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                const stats = [
+                    `Pedidos confirmados: ${reportData.estadisticas.totalPedidos}`,
+                    `Ventas totales: ${reportData.estadisticas.ventasTotales.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+                    `Ticket promedio: ${reportData.estadisticas.ticketPromedio.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+                    `Días con ventas: ${reportData.estadisticas.diasConVentas}`
+                ];
+                
+                stats.forEach(stat => {
+                    doc.text(stat, 25, yPos);
+                    yPos += 7;
+                });
+                
+                yPos += 10;
+                
+                // Ventas por estado
+                if (document.getElementById('includeTables').checked && reportData.ventasPorEstado.length > 0) {
+                    doc.setFontSize(16);
+                    doc.setTextColor(39, 174, 96);
+                    doc.text('VENTAS POR ESTADO', 20, yPos);
+                    yPos += 10;
+                    
+                    const statusHeaders = [['Estado', 'Pedidos', 'Ventas (€)']];
+                    const statusRows = reportData.ventasPorEstado.map(stat => [
+                        stat.estadoTexto,
+                        stat.pedidos.toString(),
+                        stat.ventas.toFixed(2)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPos,
+                        head: statusHeaders,
+                        body: statusRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: [39, 174, 96] },
+                        margin: { left: 20 }
+                    });
+                    
+                    yPos = doc.lastAutoTable.finalY + 10;
+                }
+                
+                // Métodos de pago
+                if (document.getElementById('includeTables').checked) {
+                    doc.setFontSize(16);
+                    doc.setTextColor(155, 89, 182);
+                    doc.text('MÉTODOS DE PAGO', 20, yPos);
+                    yPos += 10;
+                    
+                    const paymentHeaders = [['Método', 'Pedidos', 'Ingresos (€)', '%']];
+                    const paymentRows = reportData.metodosPago.map(method => [
+                        method.metodo,
+                        method.pedidos.toString(),
+                        method.ingresos.toFixed(2),
+                        method.porcentaje.toFixed(1) + '%'
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPos,
+                        head: paymentHeaders,
+                        body: paymentRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: [155, 89, 182] },
+                        margin: { left: 20 }
+                    });
+                    
+                    yPos = doc.lastAutoTable.finalY + 10;
+                }
+                
+                // Ventas por día
+                if (document.getElementById('includeTables').checked) {
+                    // Verificar si necesitamos nueva página
+                    if (yPos > pageHeight - 50) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(16);
+                    doc.setTextColor(230, 126, 34);
+                    doc.text('VENTAS POR DÍA', 20, yPos);
+                    yPos += 10;
+                    
+                    const dailyHeaders = [['Fecha', 'Día', 'Pedidos', 'Ventas (€)', 'Promedio (€)']];
+                    const dailyRows = reportData.ventasPorDia.map(day => [
+                        day.fecha,
+                        day.diaSemana.substring(0, 3), // Solo primeras 3 letras del día
+                        day.pedidos.toString(),
+                        day.ventaTotal.toFixed(2),
+                        day.promedioVenta.toFixed(2)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPos,
+                        head: dailyHeaders,
+                        body: dailyRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: [230, 126, 34] },
+                        margin: { left: 20 },
+                        columnStyles: {
+                            0: { cellWidth: 25 },
+                            1: { cellWidth: 20 },
+                            2: { cellWidth: 20 },
+                            3: { cellWidth: 30 },
+                            4: { cellWidth: 30 }
+                        }
+                    });
+                    
+                    yPos = doc.lastAutoTable.finalY + 10;
+                }
+                
+                // Productos más vendidos
+                if (document.getElementById('includeTables').checked && reportData.productosMasVendidos.length > 0) {
+                    // Verificar si necesitamos nueva página
+                    if (yPos > pageHeight - 50) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(16);
+                    doc.setTextColor(231, 76, 60);
+                    doc.text('PRODUCTOS MÁS VENDIDOS', 20, yPos);
+                    yPos += 10;
+                    
+                    const productHeaders = [['#', 'Producto', 'Categoría', 'Cantidad', 'Ingresos (€)']];
+                    const productRows = reportData.productosMasVendidos.map(product => [
+                        product.posicion.toString(),
+                        product.nombre.length > 30 ? product.nombre.substring(0, 27) + '...' : product.nombre,
+                        product.categoria,
+                        product.cantidadVendida.toFixed(2),
+                        product.ingresosTotales.toFixed(2)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPos,
+                        head: productHeaders,
+                        body: productRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: [231, 76, 60] },
+                        margin: { left: 20 },
+                        columnStyles: {
+                            0: { cellWidth: 10 },
+                            1: { cellWidth: 60 },
+                            2: { cellWidth: 30 },
+                            3: { cellWidth: 25 },
+                            4: { cellWidth: 25 }
+                        }
+                    });
+                    
+                    yPos = doc.lastAutoTable.finalY + 10;
+                }
+                
+                // Pie de página
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(
+                        `Página ${i} de ${totalPages}`,
+                        pageWidth / 2,
+                        pageHeight - 10,
+                        { align: 'center' }
+                    );
+                    doc.text(
+                        'Carnicería Tenerife - Reporte de Ventas',
+                        pageWidth / 2,
+                        pageHeight - 5,
+                        { align: 'center' }
+                    );
+                }
+                
+                // Guardar PDF
+                const fileName = `Reporte_Ventas_${reportData.periodo.inicio}_${reportData.periodo.fin}.pdf`;
+                doc.save(fileName);
+                
+                showNotification('✅ Reporte exportado a PDF correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al exportar a PDF:', error);
+                showNotification('❌ Error al exportar a PDF', 'danger');
+            }
+        }
+
+        // 3. Exportar a CSV
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            exportToCSV();
+        });
+
+        function exportToCSV() {
+            try {
+                // Crear contenido CSV
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Encabezado principal
+                csvContent += "REPORTE DE VENTAS - CARNICERÍA TENERIFE\r\n";
+                csvContent += "Pedidos Confirmados y Completados\r\n";
+                csvContent += `Período: ${reportData.periodo.inicio} - ${reportData.periodo.fin}\r\n`;
+                csvContent += `Generado: ${reportData.periodo.generado}\r\n\r\n`;
+                
+                // Estadísticas principales
+                csvContent += "ESTADÍSTICAS PRINCIPALES\r\n";
+                csvContent += "Pedidos confirmados,Ventas totales (€),Ticket promedio (€),Días con ventas\r\n";
+                csvContent += `${reportData.estadisticas.totalPedidos},${reportData.estadisticas.ventasTotales.toFixed(2)},${reportData.estadisticas.ticketPromedio.toFixed(2)},${reportData.estadisticas.diasConVentas}\r\n\r\n`;
+                
+                // Ventas por estado
+                if (reportData.ventasPorEstado.length > 0) {
+                    csvContent += "VENTAS POR ESTADO\r\n";
+                    csvContent += "Estado,Pedidos,Ventas (€)\r\n";
+                    reportData.ventasPorEstado.forEach(stat => {
+                        csvContent += `${stat.estadoTexto},${stat.pedidos},${stat.ventas.toFixed(2)}\r\n`;
+                    });
+                    csvContent += "\r\n";
+                }
+                
+                // Métodos de pago
+                csvContent += "MÉTODOS DE PAGO\r\n";
+                csvContent += "Método,Pedidos,Ingresos (€),%\r\n";
+                reportData.metodosPago.forEach(method => {
+                    csvContent += `${method.metodo},${method.pedidos},${method.ingresos.toFixed(2)},${method.porcentaje.toFixed(1)}%\r\n`;
+                });
+                csvContent += "\r\n";
+                
+                // Ventas por día
+                csvContent += "VENTAS POR DÍA\r\n";
+                csvContent += "Fecha,Día,Pedidos,Ventas Totales (€),Ticket Promedio (€),Venta Mínima (€),Venta Máxima (€)\r\n";
+                reportData.ventasPorDia.forEach(day => {
+                    csvContent += `${day.fecha},${day.diaSemana},${day.pedidos},${day.ventaTotal.toFixed(2)},${day.promedioVenta.toFixed(2)},${day.ventaMinima.toFixed(2)},${day.ventaMaxima.toFixed(2)}\r\n`;
+                });
+                csvContent += "\r\n";
+                
+                // Productos más vendidos
+                if (reportData.productosMasVendidos.length > 0) {
+                    csvContent += "PRODUCTOS MÁS VENDIDOS\r\n";
+                    csvContent += "#,Producto,Categoría,Unidad,Cantidad Vendida,Ingresos Totales (€),Promedio por Unidad (€)\r\n";
+                    reportData.productosMasVendidos.forEach(product => {
+                        csvContent += `${product.posicion},"${product.nombre}",${product.categoria},${product.unidad},${product.cantidadVendida.toFixed(2)},${product.ingresosTotales.toFixed(2)},${product.promedioPorUnidad.toFixed(2)}\r\n`;
+                    });
+                    csvContent += "\r\n";
+                }
+                
+                // Métodos de pago detallados
+                csvContent += "MÉTODOS DE PAGO DETALLADOS\r\n";
+                csvContent += "Método de Pago,Pedidos,Ingresos Totales (€),% del Total,Ticket Promedio (€)\r\n";
+                reportData.metodosPago.forEach(method => {
+                    csvContent += `${method.metodo},${method.pedidos},${method.ingresos.toFixed(2)},${method.porcentaje.toFixed(1)}%,${method.promedioTicket.toFixed(2)}\r\n`;
+                });
+                
+                // Calcular totales
+                const totalPedidosPago = reportData.metodosPago.reduce((sum, method) => sum + method.pedidos, 0);
+                const totalIngresosPago = reportData.metodosPago.reduce((sum, method) => sum + method.ingresos, 0);
+                const promedioTotalPago = totalPedidosPago > 0 ? totalIngresosPago / totalPedidosPago : 0;
+                
+                csvContent += `TOTALES,${totalPedidosPago},${totalIngresosPago.toFixed(2)},100%,${promedioTotalPago.toFixed(2)}\r\n`;
+                
+                // Crear y descargar archivo
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `Reporte_Ventas_${reportData.periodo.inicio}_${reportData.periodo.fin}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('✅ Reporte exportado a CSV correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al exportar a CSV:', error);
+                showNotification('❌ Error al exportar a CSV', 'danger');
+            }
+        }
+
+        // 4. Exportar a JSON
+        document.getElementById('exportJsonBtn').addEventListener('click', function() {
+            exportToJSON();
+        });
+
+        function exportToJSON() {
+            try {
+                // Formatear JSON con indentación
+                const jsonContent = JSON.stringify(reportData, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Reporte_Ventas_${reportData.periodo.inicio}_${reportData.periodo.fin}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showNotification('✅ Reporte exportado a JSON correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al exportar a JSON:', error);
+                showNotification('❌ Error al exportar a JSON', 'danger');
+            }
+        }
+
+        // ============================================
+        // FUNCIONES AUXILIARES
+        // ============================================
+
+        function showNotification(message, type) {
+            // Crear notificación
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+
+        // Configurar fechas por defecto
+        window.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+            
+            if (!document.getElementById('fecha_inicio').value) {
+                document.getElementById('fecha_inicio').value = thirtyDaysAgoStr;
+            }
+            if (!document.getElementById('fecha_fin').value) {
+                document.getElementById('fecha_fin').value = today;
+            }
+            
+            // Inicializar DataTables si están disponibles
+            if (typeof $.fn.DataTable !== 'undefined') {
+                $('#salesTable').DataTable({
+                    pageLength: 10,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                    },
+                    order: [[0, 'desc']],
+                    dom: '<"top"fl>rt<"bottom"ip><"clear">'
+                });
+                
+                $('#productsTable').DataTable({
+                    pageLength: 10,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                    },
+                    order: [[0, 'asc']],
+                    dom: '<"top"fl>rt<"bottom"ip><"clear">'
+                });
+                
+                $('#paymentMethodsTable').DataTable({
+                    pageLength: 10,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                    },
+                    order: [[0, 'asc']],
+                    dom: '<"top"fl>rt<"bottom"ip><"clear">'
+                });
+            }
+        });
+
+        // Función para capturar gráficos como imágenes (para exportaciones especiales)
+        function captureChartAsImage(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                return canvas.toDataURL('image/png');
+            }
+            return null;
+        }
+
+        // Manejar la impresión
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+P para imprimir
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

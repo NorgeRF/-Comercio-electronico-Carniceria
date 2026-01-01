@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Panel de Administración</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            background: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .admin-brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #444;
+            text-align: center;
+        }
+        
+        .admin-brand h2 {
+            color: white;
+            margin: 0;
+        }
+        
+        .admin-nav {
+            padding: 20px 0;
+        }
+        
+        .admin-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .admin-nav a i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .admin-main {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 15px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .recent-orders {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .orders-table th,
+        .orders-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-preparando {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-enviado {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-entregado {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-pendiente_pago {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px dashed #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .logout-btn {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #444;
+        }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .quick-action-btn {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: var(--primary-color);
+        }
+        
+        .quick-action-btn i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-brand">
+                <h2><i class="fas fa-utensils"></i> Admin Panel</h2>
+                <p>Carnicería Tenerife</p>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="/admin" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/admin/products">
+                    <i class="fas fa-drumstick-bite"></i> Productos
+                </a>
+                <a href="/admin/orders">
+                    <i class="fas fa-shopping-cart"></i> Pedidos
+                </a>
+                <a href="/admin/orders/report">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+                <a href="/admin/customers">
+                    <i class="fas fa-users"></i> Clientes
+                </a>
+                <a href="/admin/payments">
+                    <i class="fas fa-credit-card"></i> Pagos
+                </a>
+                <a href="/admin/settings">
+                    <i class="fas fa-cog"></i> Configuración
+                </a>
+            </nav>
+            
+            <div class="logout-btn">
+                <a href="/admin/logout" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main">
+            <div class="admin-header">
+                <div>
+                    <h1><%= title %></h1>
+                    <p class="text-muted">
+                        <i class="fas fa-user"></i> Hola, <%= user ? user.nombre : 'Administrador' %>
+                        <% if (user && user.rol === 'admin') { %>
+                            <span class="badge bg-primary ms-2">Administrador</span>
+                        <% } %>
+                    </p>
+                </div>
+                <div class="admin-actions">
+                    <span class="text-muted me-3">
+                        <i class="fas fa-calendar-alt"></i> <%= new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Mensajes -->
+            <% if (success_msg && success_msg.length > 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <% if (error_msg && error_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <h3><i class="fas fa-chart-line me-2"></i>Resumen de Ventas</h3>
+                <p class="mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Sistema actualizado con datos en tiempo real. Última actualización: <strong><%= new Date().toLocaleTimeString('es-ES') %></strong>
+                </p>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <!-- Total Pedidos -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #3498db;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-number"><%= totalOrders || 0 %></div>
+                    <div class="stat-label">Total Pedidos</div>
+                </div>
+                
+                <!-- Pendientes de Proceso -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f39c12;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number"><%= pendingOrders || 0 %></div>
+                    <div class="stat-label">Pendientes de Proceso</div>
+                </div>
+                
+                <!-- Pendientes de Pago -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #e74c3c;">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-number"><%= pendingPaymentOrders || 0 %></div>
+                    <div class="stat-label">Pendientes de Pago</div>
+                </div>
+                
+                <!-- Productos Activos -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #2ecc71;">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-number"><%= totalProducts || 0 %></div>
+                    <div class="stat-label">Productos Activos</div>
+                </div>
+                
+                <!-- Ventas Hoy (REALES) -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #9b59b6;">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-number">
+                        <% if (typeof formatPrice === 'function') { %>
+                            <%= formatPrice(salesToday || 0) %>
+                        <% } else { %>
+                            €<%= (salesToday || 0).toFixed(2) %>
+                        <% } %>
+                    </div>
+                    <div class="stat-label">Ventas Hoy (Confirmadas)</div>
+                </div>
+                
+                <!-- Ventas del Mes -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #1abc9c;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-number">
+                        <% if (typeof formatPrice === 'function') { %>
+                            <%= formatPrice(monthlySales || 0) %>
+                        <% } else { %>
+                            €<%= (monthlySales || 0).toFixed(2) %>
+                        <% } %>
+                    </div>
+                    <div class="stat-label">Ventas del Mes</div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de Pedidos por Estado -->
+            <div class="recent-orders">
+                <h2><i class="fas fa-chart-pie me-2"></i>Distribución de Pedidos por Estado</h2>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="recent-orders">
+                <h2><i class="fas fa-history me-2"></i> Pedidos Recientes</h2>
+                
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Método Pago</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (recentOrders && recentOrders.length > 0) { %>
+                            <% recentOrders.forEach(order => { %>
+                                <tr>
+                                    <td><strong><%= order.codigo_pedido %></strong></td>
+                                    <td>
+                                        <%= order.cliente_nombre %>
+                                        <% if (order.cliente_telefono) { %>
+                                            <br><small class="text-muted"><%= order.cliente_telefono %></small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (typeof formatPrice === 'function') { %>
+                                            <%= formatPrice(order.total || 0) %>
+                                        <% } else { %>
+                                            €<%= (order.total || 0).toFixed(2) %>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-<%= order.estado %>">
+                                            <% 
+                                                const estadoText = order.estado || 'pendiente';
+                                                const formattedEstado = estadoText.charAt(0).toUpperCase() + estadoText.slice(1).replace('_', ' ');
+                                            %>
+                                            <%= formattedEstado %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= order.metodo_pago ? order.metodo_pago.toUpperCase() : 'NO ESPEC.' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <%= new Date(order.created_at).toLocaleDateString('es-ES') %>
+                                        <br>
+                                        <small class="text-muted">
+                                            <%= new Date(order.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) %>
+                                        </small>
+                                    </td>
+                                    <td class="action-buttons">
+                                        <a href="/admin/orders/<%= order.id %>" class="btn btn-primary btn-sm" title="Ver Detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <% if (order.estado !== 'cancelado' && order.estado !== 'entregado') { %>
+                                            <button class="btn btn-success btn-sm" onclick="updateOrderStatus(<%= order.id %>, 'preparando')" title="Marcar como Preparando">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px;">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">No hay pedidos recientes</p>
+                                    <a href="/admin/orders" class="btn btn-primary">Ver Todos los Pedidos</a>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+                
+                <% if (recentOrders && recentOrders.length > 0) { %>
+                <div class="text-center mt-3">
+                    <a href="/admin/orders" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>Ver Todos los Pedidos
+                    </a>
+                </div>
+                <% } %>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="/admin/products/new" class="quick-action-btn">
+                    <i class="fas fa-plus-circle text-primary"></i>
+                    <span>Nuevo Producto</span>
+                </a>
+                <a href="/admin/orders" class="quick-action-btn">
+                    <i class="fas fa-shopping-cart text-success"></i>
+                    <span>Gestión de Pedidos</span>
+                </a>
+                <a href="/admin/orders/report" class="quick-action-btn">
+                    <i class="fas fa-chart-bar text-warning"></i>
+                    <span>Reportes de Ventas</span>
+                </a>
+                <a href="https://wa.me/<%= whatsapp_number %>" class="quick-action-btn" target="_blank">
+                    <i class="fab fa-whatsapp text-success"></i>
+                    <span>Atención por WhatsApp</span>
+                </a>
+                <a href="/admin/products" class="quick-action-btn">
+                    <i class="fas fa-boxes text-info"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="/admin/settings" class="quick-action-btn">
+                    <i class="fas fa-cog text-secondary"></i>
+                    <span>Configuración</span>
+                </a>
+            </div>
+            
+            <!-- Información del Sistema -->
+            <div class="mt-4 text-center text-muted">
+                <small>
+                    <i class="fas fa-info-circle me-1"></i>
+                    Sistema Carnicería Tenerife v1.0 | 
+                    Pedidos procesados: <strong><%= totalOrders || 0 %></strong> | 
+                    Última actualización: <strong><%= new Date().toLocaleTimeString('es-ES') %></strong>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Gráfico de distribución de pedidos por estado
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard cargado');
+            
+            // Verificar si hay datos para el gráfico
+            <% if (statusStats && statusStats.length > 0) { %>
+                const statusData = [
+                    <% statusStats.forEach((stat, index) => { %>
+                        {
+                            estado: '<%= stat.estado %>',
+                            count: <%= stat.count || 0 %>,
+                            total: <%= stat.total || 0 %>
+                        }<%= index < statusStats.length - 1 ? ',' : '' %>
+                    <% }); %>
+                ];
+                
+                console.log('Datos para gráfico:', statusData);
+                
+                const ctx = document.getElementById('statusChart')?.getContext('2d');
+                if (ctx) {
+                    const statusChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: statusData.map(item => {
+                                // Formatear etiquetas
+                                const estado = item.estado || 'desconocido';
+                                return estado.charAt(0).toUpperCase() + estado.slice(1).replace('_', ' ');
+                            }),
+                            datasets: [{
+                                data: statusData.map(item => item.count),
+                                backgroundColor: [
+                                    '#ffc107', // pendiente - amarillo
+                                    '#17a2b8', // confirmado - azul claro
+                                    '#007bff', // preparando - azul
+                                    '#6f42c1', // enviado - púrpura
+                                    '#28a745', // entregado - verde
+                                    '#dc3545', // cancelado - rojo
+                                    '#fd7e14'  // pendiente_pago - naranja
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        padding: 20
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((value / total) * 100);
+                                            return `${label}: ${value} pedidos (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            <% } else { %>
+                console.log('No hay datos para el gráfico de estados');
+                const ctx = document.getElementById('statusChart')?.getContext('2d');
+                if (ctx) {
+                    const statusChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Sin datos'],
+                            datasets: [{
+                                data: [1],
+                                backgroundColor: ['#6c757d'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+            <% } %>
+        });
+
+        // Función para actualizar estado de pedido
+        async function updateOrderStatus(orderId, newStatus) {
+            if (confirm(`¿Cambiar estado del pedido a "${newStatus}"?`)) {
+                try {
+                    const response = await fetch(`/admin/orders/${orderId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            estado: newStatus,
+                            notas_admin: `Estado cambiado a ${newStatus} desde dashboard` 
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Estado actualizado correctamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (result.message || 'No se pudo actualizar'));
+                        }
+                    } else {
+                        alert('Error del servidor al actualizar estado');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión al actualizar estado');
+                }
+            }
+        }
+        
+        // Función para enviar WhatsApp
+        async function sendWhatsAppNotification(orderId) {
+            const message = prompt('Escribe el mensaje para WhatsApp (opcional):', 
+                'Hola, tu pedido ha sido actualizado. Gracias por tu compra.');
+            
+            if (message !== null) {
+                try {
+                    const response = await fetch(`/admin/orders/${orderId}/whatsapp`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ mensaje: message })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            if (result.whatsapp_link) {
+                                // Abrir enlace de WhatsApp
+                                window.open(result.whatsapp_link, '_blank');
+                            }
+                            alert('Notificación enviada correctamente');
+                        } else {
+                            alert('Error: ' + (result.message || 'No se pudo enviar'));
+                        }
+                    } else {
+                        alert('Error del servidor al enviar WhatsApp');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión al enviar WhatsApp');
+                }
+            }
+        }
+        
+        // Auto-refresh cada 5 minutos para datos en tiempo real
+        let autoRefresh = true;
+        
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const btn = document.getElementById('refreshToggle');
+            if (btn) {
+                btn.innerHTML = autoRefresh ? 
+                    '<i class="fas fa-pause"></i> Pausar Auto-Refresh' : 
+                    '<i class="fas fa-play"></i> Activar Auto-Refresh';
+                btn.className = autoRefresh ? 'btn btn-success btn-sm' : 'btn btn-secondary btn-sm';
+            }
+        }
+        
+        // Configurar auto-refresh si está activado
+        if (autoRefresh) {
+            setTimeout(() => {
+                if (autoRefresh) {
+                    console.log('Auto-refresh del dashboard...');
+                    location.reload();
+                }
+            }, 300000); // 5 minutos
+        }
+        
+        // Botón de refresh manual
+        function manualRefresh() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

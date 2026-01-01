@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Error' %> - Carnicería Tenerife</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 80px 20px;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        
+        .error-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+            max-width: 800px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        .error-actions {
+            margin-top: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: #c62828;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1><i class="fas fa-utensils"></i> Carnicería Tenerife</h1>
+                <p>Productos cárnicos de máxima calidad</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Error Content -->
+    <section class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h1 class="error-title"><%= title || 'Error del Sistema' %></h1>
+        
+        <p class="error-message">
+            <%= message || 'Ha ocurrido un error inesperado. Nuestro equipo ha sido notificado.' %>
+        </p>
+        
+        <% if (process.env.NODE_ENV === 'development' && error) { %>
+            <div class="error-details">
+                <h3>Detalles del Error (Desarrollo):</h3>
+                <p><strong>Mensaje:</strong> <%= error.message %></p>
+                <% if (error.stack) { %>
+                    <p><strong>Stack Trace:</strong></p>
+                    <pre><%= error.stack %></pre>
+                <% } %>
+            </div>
+        <% } %>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Volver al Inicio
+            </a>
+            <a href="/contacto" class="btn btn-secondary">
+                <i class="fas fa-phone"></i> Contactar Soporte
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-section">
+                <h3>Carnicería Tenerife</h3>
+                <p>Productos cárnicos de máxima calidad desde 2003</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p><i class="fas fa-phone"></i> 922 123 456</p>
+                <p><i class="fas fa-envelope"></i> soporte@carniceriatenerife.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <%= new Date().getFullYear() %> Carnicería Tenerife</p>
+        </div>
+    </footer>
+</body>
+</html>

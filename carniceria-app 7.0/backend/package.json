@@ -1,0 +1,39 @@
+{
+  "name": "carniceria-tenerife",
+  "version": "1.0.0",
+  "description": "Sistema de ventas online para carnicería en Tenerife",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-db": "node scripts/init-mysql.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.0",
+    "sequelize": "^6.32.1",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "express-session": "^1.17.3",
+    "connect-flash": "^0.1.1",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "stripe": "^13.10.0",
+    "nodemailer": "^6.9.7",
+    "whatsapp-web.js": "^1.22.1",
+    "qrcode-terminal": "^0.12.0",
+    "ejs": "^3.1.9",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

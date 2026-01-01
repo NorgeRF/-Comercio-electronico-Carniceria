@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #c62828;
+            --primary-light: #ff5f52;
+            --primary-dark: #8e0000;
+            --secondary-color: #455a64;
+            --success-color: #2e7d32;
+            --warning-color: #f9a825;
+            --danger-color: #d32f2f;
+            --light-color: #f5f5f5;
+            --dark-color: #212121;
+            --gray-color: #757575;
+            --border-color: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            color: var(--dark-color);
+        }
+        
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .admin-sidebar {
+            background: var(--dark-color);
+            color: white;
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        
+        .admin-brand {
+            padding: 25px 20px;
+            border-bottom: 1px solid #444;
+            text-align: center;
+        }
+        
+        .admin-brand h2 {
+            color: white;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .admin-brand p {
+            color: #bbb;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .admin-nav {
+            padding: 20px 0;
+        }
+        
+        .admin-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: var(--primary-color);
+        }
+        
+        .admin-nav a i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .admin-nav .nav-section {
+            margin-bottom: 20px;
+        }
+        
+        .nav-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .logout-btn {
+            padding: 20px;
+            margin-top: auto;
+            border-top: 1px solid #444;
+        }
+        
+        .admin-main {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f5f5f5;
+            width: calc(100% - 250px);
+        }
+        
+        .admin-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .admin-header h1 {
+            font-size: 1.8rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-header h1 i {
+            color: var(--primary-color);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(198, 40, 40, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #37474f;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        .form-group label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-help {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+            margin-top: 5px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            padding: 15px 20px;
+            border-top: 1px solid #444;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Botón móvil */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* Media queries ajustadas */
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .admin-main {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .admin-header {
+                margin-top: 70px; /* Espacio para el botón móvil */
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-main {
+                padding: 15px;
+            }
+            
+            .admin-header {
+                padding: 15px;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón móvil para mostrar/ocultar menú -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-brand">
+                <h2><i class="fas fa-utensils"></i> Admin Panel</h2>
+                <p>Carnicería Tenerife</p>
+            </div>
+            
+            <nav class="admin-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/admin" onclick="closeSidebarOnMobile()">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="/admin/products" onclick="closeSidebarOnMobile()">
+                        <i class="fas fa-drumstick-bite"></i> Productos
+                    </a>
+                    <a href="/admin/orders" onclick="closeSidebarOnMobile()">
+                        <i class="fas fa-shopping-cart"></i> Pedidos
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <% if (user && user.nombre) { %>
+                        <%= user.nombre.charAt(0).toUpperCase() %>
+                    <% } else { %>
+                        A
+                    <% } %>
+                </div>
+                <div>
+                    <div style="font-weight: 500;">
+                        <% if (user && user.nombre) { %>
+                            <%= user.nombre %>
+                        <% } else { %>
+                            Administrador
+                        <% } %>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #bbb;">
+                        <%= user ? user.rol : 'admin' %>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="logout-btn">
+                <a href="/admin/logout" class="btn btn-secondary" style="width: 100%; text-align: center;" onclick="closeSidebarOnMobile()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main">
+            <div class="admin-header">
+                <h1><i class="fas fa-<%= product.id ? 'edit' : 'plus' %>"></i> <%= title %></h1>
+                
+                <div class="header-actions">
+                    <a href="/admin/products" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Productos
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Form Container -->
+            <div class="form-container">
+                <% if (success_msg && success_msg.length > 0) { %>
+                    <div class="alert alert-success">
+                        <%= success_msg %>
+                    </div>
+                <% } %>
+                
+                <% if (error_msg && error_msg.length > 0) { %>
+                    <div class="alert alert-error">
+                        <%= error_msg %>
+                    </div>
+                <% } %>
+                
+                <form action="<%= product.id ? '/admin/products/' + product.id : '/admin/products' %>" 
+                      method="POST" 
+                      id="product-form">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre" class="required">Nombre del Producto</label>
+                            <input type="text" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   class="form-control" 
+                                   value="<%= product.nombre || '' %>" 
+                                   required
+                                   placeholder="Ej: Lomo de Vacuno Premium">
+                            <div class="form-help">Nombre descriptivo del producto</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="categoria" class="required">Categoría</label>
+                            <select id="categoria" name="categoria" class="form-control" required>
+                                <option value="">Selecciona una categoría</option>
+                                <% categories.forEach(cat => { %>
+                                    <option value="<%= cat %>" <%= product.categoria === cat ? 'selected' : '' %>>
+                                        <%= cat.charAt(0).toUpperCase() + cat.slice(1) %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" 
+                                  name="descripcion" 
+                                  class="form-control" 
+                                  placeholder="Descripción detallada del producto..."><%= product.descripcion || '' %></textarea>
+                        <div class="form-help">Opcional. Describe el producto para los clientes</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="precio" class="required">Precio (€)</label>
+                            <input type="number" 
+                                   id="precio" 
+                                   name="precio" 
+                                   class="form-control" 
+                                   value="<%= product.precio || '' %>" 
+                                   required
+                                   min="0"
+                                   step="0.01"
+                                   placeholder="0.00">
+                            <div class="form-help">Precio por unidad</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="unidad" class="required">Unidad de Medida</label>
+                            <select id="unidad" name="unidad" class="form-control" required>
+                                <option value="">Selecciona una unidad</option>
+                                <% units.forEach(unit => { %>
+                                    <option value="<%= unit %>" <%= product.unidad === unit ? 'selected' : '' %>>
+                                        <%= unit %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stock">Stock Disponible</label>
+                            <input type="number" 
+                                   id="stock" 
+                                   name="stock" 
+                                   class="form-control" 
+                                   value="<%= product.stock || 0 %>" 
+                                   min="0"
+                                   placeholder="0">
+                            <div class="form-help">Cantidad disponible en inventario</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Estado del Producto</label>
+                            <div class="checkbox-group">
+                                <input type="checkbox" 
+                                       id="activo" 
+                                       name="activo" 
+                                       <%= product.activo === undefined || product.activo ? 'checked' : '' %>>
+                                <label for="activo">Producto activo (visible en la tienda)</label>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" 
+                                       id="destacado" 
+                                       name="destacado" 
+                                       <%= product.destacado ? 'checked' : '' %>>
+                                <label for="destacado">Producto destacado (aparece en inicio)</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="imagen">URL de la Imagen</label>
+                        <input type="text" 
+                               id="imagen" 
+                               name="imagen" 
+                               class="form-control" 
+                               value="<%= product.imagen || '' %>" 
+                               placeholder="https://ejemplo.com/imagen.jpg">
+                        <div class="form-help">Opcional. URL de la imagen del producto</div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> <%= product.id ? 'Actualizar Producto' : 'Crear Producto' %>
+                        </button>
+                        
+                        <a href="/admin/products" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        
+                        <% if (product.id) { %>
+                            <button type="button" 
+                                    class="btn btn-danger" 
+                                    onclick="deleteProduct(<%= product.id %>)"
+                                    style="margin-left: auto;">
+                                <i class="fas fa-trash"></i> Eliminar Producto
+                            </button>
+                        <% } %>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones para el menú móvil
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            sidebar.classList.toggle('active');
+        }
+        
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 1024) {
+                const sidebar = document.querySelector('.admin-sidebar');
+                sidebar.classList.remove('active');
+            }
+        }
+        
+        // Cerrar sidebar al hacer clic en enlaces
+        document.querySelectorAll('.admin-nav a, .logout-btn a').forEach(link => {
+            link.addEventListener('click', closeSidebarOnMobile);
+        });
+        
+        // Cerrar sidebar al hacer clic fuera (en móvil)
+        document.addEventListener('click', (event) => {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const mobileBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 1024 && 
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(event.target) &&
+                !mobileBtn.contains(event.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Validación del formulario
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            const nombre = document.getElementById('nombre').value;
+            const precio = document.getElementById('precio').value;
+            const categoria = document.getElementById('categoria').value;
+            const unidad = document.getElementById('unidad').value;
+            
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Validar campos obligatorios
+            if (!nombre.trim()) {
+                isValid = false;
+                errorMessage += '• El nombre es obligatorio\n';
+            }
+            
+            if (!precio || parseFloat(precio) <= 0) {
+                isValid = false;
+                errorMessage += '• El precio debe ser mayor a 0\n';
+            }
+            
+            if (!categoria) {
+                isValid = false;
+                errorMessage += '• La categoría es obligatoria\n';
+            }
+            
+            if (!unidad) {
+                isValid = false;
+                errorMessage += '• La unidad es obligatoria\n';
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, corrige los siguientes errores:\n\n' + errorMessage);
+                return false;
+            }
+            
+            // Mostrar loading
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            submitBtn.disabled = true;
+        });
+        
+        // Función para eliminar producto
+        function deleteProduct(id) {
+            if (confirm('¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.')) {
+                fetch(`/api/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Producto eliminado exitosamente');
+                        window.location.href = '/admin/products';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el producto');
+                });
+            }
+        }
+        
+        // Auto-guardado opcional (para formularios largos)
+        let autoSaveTimer;
+        
+        function autoSave() {
+            const form = document.getElementById('product-form');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Aquí podrías implementar auto-guardado local
+            console.log('Auto-save:', data);
+        }
+        
+        // Configurar auto-guardado cada 30 segundos
+        document.querySelectorAll('input, textarea, select').forEach(element => {
+            element.addEventListener('input', () => {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(autoSave, 30000);
+            });
+        });
+        
+        // Prevenir pérdida de datos al salir
+        window.addEventListener('beforeunload', function(e) {
+            const form = document.getElementById('product-form');
+            const hasChanges = form.checkValidity && form.checkValidity();
+            
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = 'Tienes cambios sin guardar. ¿Seguro que quieres salir?';
+                return e.returnValue;
+            }
+        });
+        
+        // Ajustar layout al cargar y redimensionar
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const mainContent = document.querySelector('.admin-main');
+            
+            function adjustLayout() {
+                if (window.innerWidth > 1024) {
+                    sidebar.style.transform = 'translateX(0)';
+                    mainContent.style.marginLeft = '250px';
+                    mainContent.style.width = 'calc(100% - 250px)';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                    mainContent.style.width = '100%';
+                }
+            }
+            
+            adjustLayout();
+            window.addEventListener('resize', adjustLayout);
+        });
+    </script>
+</body>
+</html>

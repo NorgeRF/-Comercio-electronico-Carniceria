@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Panel de Administración</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            background: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .admin-brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #444;
+            text-align: center;
+        }
+        
+        .admin-brand h2 {
+            color: white;
+            margin: 0;
+        }
+        
+        .admin-nav {
+            padding: 20px 0;
+        }
+        
+        .admin-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .admin-nav a i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .admin-main {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .customer-profile {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        
+        .profile-info h2 {
+            margin: 0 0 5px 0;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .profile-stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h4 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            min-width: 120px;
+            display: inline-block;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-verified {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-unverified {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .orders-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .orders-table th,
+        .orders-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .order-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .status-pendiente { background: #fff3cd; color: #856404; }
+        .status-confirmado { background: #d1ecf1; color: #0c5460; }
+        .status-preparando { background: #d4edda; color: #155724; }
+        .status-enviado { background: #cce5ff; color: #004085; }
+        .status-entregado { background: #d4edda; color: #155724; }
+        .status-cancelado { background: #f8d7da; color: #721c24; }
+        .status-pendiente_pago { background: #f8d7da; color: #721c24; border: 1px dashed #721c24; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                display: none;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-brand">
+                <h2><i class="fas fa-utensils"></i> Admin Panel</h2>
+                <p>Carnicería Tenerife</p>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="/admin">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/admin/products">
+                    <i class="fas fa-drumstick-bite"></i> Productos
+                </a>
+                <a href="/admin/orders">
+                    <i class="fas fa-shopping-cart"></i> Pedidos
+                </a>
+                <a href="/admin/customers" class="active">
+                    <i class="fas fa-users"></i> Clientes
+                </a>
+                <a href="/admin/orders/report">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+                <a href="/admin/payments">
+                    <i class="fas fa-credit-card"></i> Pagos
+                </a>
+                <a href="/admin/settings">
+                    <i class="fas fa-cog"></i> Configuración
+                </a>
+            </nav>
+            
+            <div class="logout-btn">
+                <a href="/admin/logout" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main">
+            <div class="admin-header">
+                <div>
+                    <h1><i class="fas fa-user me-2"></i><%= title %></h1>
+                    <div>
+                        <a href="/admin/customers" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Clientes
+                        </a>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-warning" onclick="editCustomer(<%= customer.id %>)">
+                        <i class="fas fa-edit me-2"></i>Editar Cliente
+                    </button>
+                    <a href="mailto:<%= customer.email %>" class="btn btn-info">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </a>
+                    <% if (customer.telefono) { %>
+                        <a href="https://wa.me/<%= customer.telefono.replace(/\D/g, '') %>?text=Hola%20<%= encodeURIComponent(customer.nombre) %>%20" class="btn btn-success" target="_blank">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Mensajes -->
+            <% if (success_msg && success_msg.length > 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <% if (error_msg && error_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <!-- Perfil del cliente -->
+            <div class="customer-profile">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <%= customer.nombre.charAt(0).toUpperCase() %>
+                    </div>
+                    <div class="profile-info">
+                        <h2><%= customer.nombre %></h2>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-envelope me-1"></i> <%= customer.email %>
+                            <% if (customer.telefono) { %>
+                                | <i class="fas fa-phone me-1"></i> <%= customer.telefono %>
+                            <% } %>
+                        </p>
+                        <div class="d-flex gap-2">
+                            <% if (customer.activo) { %>
+                                <span class="status-badge status-active">Activo</span>
+                            <% } else { %>
+                                <span class="status-badge status-inactive">Inactivo</span>
+                            <% } %>
+                            
+                            <% if (customer.verificado) { %>
+                                <span class="status-badge status-verified">Verificado</span>
+                            <% } else { %>
+                                <span class="status-badge status-unverified">No Verificado</span>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas -->
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <div class="stat-number">
+                            €<%= (orderStats.total_spent || 0).toFixed(2) %>
+                        </div>
+                        <div class="stat-label">Total Gastado</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="stat-number">
+                            <%= orderStats.total_orders || 0 %>
+                        </div>
+                        <div class="stat-label">Pedidos Totales</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="stat-number">
+                            €<%= (orderStats.avg_order || 0).toFixed(2) %>
+                        </div>
+                        <div class="stat-label">Promedio por Pedido</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="stat-number">
+                            <%= customer.cantidad_pedidos || 0 %>
+                        </div>
+                        <div class="stat-label">Pedidos Actuales</div>
+                    </div>
+                </div>
+                
+                <!-- Información detallada -->
+                <div class="info-grid">
+                    <!-- Información personal -->
+                    <div class="info-card">
+                        <h4><i class="fas fa-id-card me-2"></i>Información Personal</h4>
+                        <div class="info-item">
+                            <span class="info-label">Nombre:</span>
+                            <%= customer.nombre %>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <%= customer.email %>
+                        </div>
+                        <% if (customer.telefono) { %>
+                        <div class="info-item">
+                            <span class="info-label">Teléfono:</span>
+                            <%= customer.telefono %>
+                        </div>
+                        <% } %>
+                        <div class="info-item">
+                            <span class="info-label">Fecha Registro:</span>
+                            <%= new Date(customer.fecha_registro).toLocaleDateString('es-ES') %>
+                        </div>
+                        <% if (customer.ultimo_acceso) { %>
+                        <div class="info-item">
+                            <span class="info-label">Último Acceso:</span>
+                            <%= new Date(customer.ultimo_acceso).toLocaleDateString('es-ES') %>
+                        </div>
+                        <% } %>
+                    </div>
+                    
+                    <!-- Dirección -->
+                    <% if (customer.direccion || customer.ciudad || customer.codigo_postal) { %>
+                    <div class="info-card">
+                        <h4><i class="fas fa-map-marker-alt me-2"></i>Dirección</h4>
+                        <% if (customer.direccion) { %>
+                        <div class="info-item">
+                            <span class="info-label">Dirección:</span>
+                            <%= customer.direccion %>
+                        </div>
+                        <% } %>
+                        <% if (customer.ciudad) { %>
+                        <div class="info-item">
+                            <span class="info-label">Ciudad:</span>
+                            <%= customer.ciudad %>
+                        </div>
+                        <% } %>
+                        <% if (customer.codigo_postal) { %>
+                        <div class="info-item">
+                            <span class="info-label">Código Postal:</span>
+                            <%= customer.codigo_postal %>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
+                    
+                    <!-- Estadísticas avanzadas -->
+                    <div class="info-card">
+                        <h4><i class="fas fa-chart-line me-2"></i>Estadísticas</h4>
+                        <div class="info-item">
+                            <span class="info-label">Total Compras:</span>
+                            €<%= (customer.total_compras || 0).toFixed(2) %>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Pedidos:</span>
+                            <%= customer.cantidad_pedidos || 0 %>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Cliente desde:</span>
+                            <%= new Date(customer.created_at).toLocaleDateString('es-ES') %>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Última actualización:</span>
+                            <%= new Date(customer.updated_at).toLocaleDateString('es-ES') %>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Acciones administrativas -->
+                <div class="action-buttons">
+                    <button class="btn btn-outline-primary" onclick="resetPassword(<%= customer.id %>)">
+                        <i class="fas fa-key me-2"></i>Resetear Contraseña
+                    </button>
+                    
+                    <% if (customer.activo) { %>
+                        <button class="btn btn-outline-danger" onclick="deactivateCustomer(<%= customer.id %>)">
+                            <i class="fas fa-user-slash me-2"></i>Desactivar Cliente
+                        </button>
+                    <% } else { %>
+                        <button class="btn btn-outline-success" onclick="activateCustomer(<%= customer.id %>)">
+                            <i class="fas fa-user-check me-2"></i>Activar Cliente
+                        </button>
+                    <% } %>
+                    
+                    <% if (!customer.verificado) { %>
+                        <button class="btn btn-outline-info" onclick="verifyCustomer(<%= customer.id %>)">
+                            <i class="fas fa-check-circle me-2"></i>Verificar Cliente
+                        </button>
+                    <% } %>
+                    
+                    <button class="btn btn-outline-warning" onclick="sendWelcomeEmail(<%= customer.id %>)">
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Bienvenida
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pedidos del cliente -->
+            <div class="orders-section">
+                <h3><i class="fas fa-shopping-cart me-2"></i>Últimos Pedidos</h3>
+                
+                <% if (customer.pedidos_cliente && customer.pedidos_cliente.length > 0) { %>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Método Pago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% customer.pedidos_cliente.forEach(order => { %>
+                                <tr>
+                                    <td><strong><%= order.codigo_pedido %></strong></td>
+                                    <td>
+                                        <%= new Date(order.created_at).toLocaleDateString('es-ES') %>
+                                        <br>
+                                        <small class="text-muted">
+                                            <%= new Date(order.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) %>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        €<%= order.total.toFixed(2) %>
+                                    </td>
+                                    <td>
+                                        <span class="order-status status-<%= order.estado %>">
+                                            <%= order.estado.charAt(0).toUpperCase() + order.estado.slice(1).replace('_', ' ') %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= order.metodo_pago ? order.metodo_pago.toUpperCase() : 'NO ESPEC.' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="/admin/orders/<%= order.id %>" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                    
+                    <div class="text-center mt-3">
+                        <a href="/admin/orders?cliente=<%= customer.id %>" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>Ver Todos los Pedidos
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Este cliente aún no ha realizado pedidos</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Funciones de edición
+        function editCustomer(customerId) {
+            // Crear modal de edición dinámico
+            const modalHtml = `
+                <div id="editCustomerModal" class="modal" style="display: block;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-edit me-2"></i>Editar Cliente</h3>
+                            <button class="close-btn" onclick="closeEditModal()">&times;</button>
+                        </div>
+                        <form id="editCustomerForm">
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nombre completo *</label>
+                                        <input type="text" class="form-control" name="nombre" value="<%= customer.nombre %>" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Teléfono</label>
+                                        <input type="text" class="form-control" name="telefono" value="<%= customer.telefono || '' %>">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Dirección</label>
+                                        <input type="text" class="form-control" name="direccion" value="<%= customer.direccion || '' %>">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ciudad</label>
+                                        <input type="text" class="form-control" name="ciudad" value="<%= customer.ciudad || '' %>">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Código Postal</label>
+                                        <input type="text" class="form-control" name="codigo_postal" value="<%= customer.codigo_postal || '' %>">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="activo" id="activo" <%= customer.activo ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="activo">
+                                                Cliente Activo
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="verificado" id="verificado" <%= customer.verificado ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="verificado">
+                                                Cliente Verificado
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                                <button type="button" class="btn btn-primary" onclick="submitEditCustomer(<%= customer.id %>)">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            const modalDiv = document.createElement('div');
+            modalDiv.innerHTML = modalHtml;
+            document.body.appendChild(modalDiv);
+        }
+        
+        function closeEditModal() {
+            const modal = document.getElementById('editCustomerModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        async function submitEditCustomer(customerId) {
+            try {
+                const form = document.getElementById('editCustomerForm');
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                const response = await fetch(`/admin/customers/${customerId}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Cliente actualizado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error al actualizar cliente');
+                console.error(error);
+            }
+        }
+        
+        // Resetear contraseña
+        async function resetPassword(customerId) {
+            if (confirm('¿Resetear contraseña del cliente? Se generará una nueva contraseña temporal.')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/reset-password`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert(`Contraseña reseteada: ${result.newPassword}\n\nGuarda esta contraseña y compártela con el cliente.`);
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al resetear contraseña');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Desactivar cliente
+        async function deactivateCustomer(customerId) {
+            if (confirm('¿Desactivar este cliente? El cliente no podrá acceder al sistema.')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Cliente desactivado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al desactivar cliente');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Activar cliente
+        async function activateCustomer(customerId) {
+            if (confirm('¿Activar este cliente?')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/restore`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Cliente activado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al activar cliente');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Verificar cliente
+        async function verifyCustomer(customerId) {
+            if (confirm('¿Marcar este cliente como verificado?')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/verify`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Cliente verificado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al verificar cliente');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Enviar email de bienvenida
+        async function sendWelcomeEmail(customerId) {
+            if (confirm('¿Enviar email de bienvenida al cliente?')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/send-welcome`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Email de bienvenida enviado correctamente');
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al enviar email de bienvenida');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Enviar recordatorio de pedido
+        async function sendOrderReminder(customerId) {
+            const message = prompt('Mensaje para el cliente (opcional):', 
+                'Hola, recordatorio de tu pedido pendiente. ¡Gracias por confiar en nosotros!');
+            
+            if (message !== null) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}/send-reminder`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        if (result.whatsapp_link) {
+                            window.open(result.whatsapp_link, '_blank');
+                        }
+                        alert('Recordatorio enviado correctamente');
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al enviar recordatorio');
+                    console.error(error);
+                }
+            }
+        }
+        
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const editModal = document.getElementById('editCustomerModal');
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+        }
+    </script>
+</body>
+</html>

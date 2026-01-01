@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 80px 20px;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .error-search {
+            max-width: 500px;
+            margin: 40px auto;
+            position: relative;
+        }
+        
+        .error-search input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+        }
+        
+        .error-search button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .error-links {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .error-link {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-decoration: none;
+            color: var(--dark-color);
+            transition: all 0.3s;
+        }
+        
+        .error-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .error-link i {
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .error-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1><i class="fas fa-utensils"></i> Carnicería Tenerife</h1>
+                <p>Productos cárnicos de máxima calidad</p>
+            </div>
+            <nav class="nav">
+                <a href="/"><i class="fas fa-home"></i> Inicio</a>
+                <a href="/productos"><i class="fas fa-drumstick-bite"></i> Productos</a>
+                <a href="/pedidos"><i class="fas fa-shopping-cart"></i> Pedidos</a>
+                <a href="/contacto"><i class="fas fa-phone"></i> Contacto</a>
+            </nav>
+            <div class="cart-icon">
+                <a href="/pedidos">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Error Content -->
+    <section class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-title"><%= title %></h1>
+        <p class="error-message"><%= message %></p>
+        
+        <div class="error-search">
+            <input type="text" placeholder="Buscar en nuestro sitio...">
+            <button type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Volver al Inicio
+            </a>
+            <a href="/productos" class="btn btn-secondary">
+                <i class="fas fa-drumstick-bite"></i> Ver Productos
+            </a>
+            <a href="/contacto" class="btn btn-secondary">
+                <i class="fas fa-phone"></i> Contactar Soporte
+            </a>
+        </div>
+        
+        <div class="error-links">
+            <a href="/productos" class="error-link">
+                <i class="fas fa-utensils"></i> Productos
+            </a>
+            <a href="/pedidos" class="error-link">
+                <i class="fas fa-shopping-cart"></i> Cómo Pedir
+            </a>
+            <a href="/contacto" class="error-link">
+                <i class="fas fa-question-circle"></i> Ayuda
+            </a>
+            <a href="https://wa.me/<%= whatsapp_number %>" class="error-link" target="_blank">
+                <i class="fab fa-whatsapp"></i> Soporte por WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-section">
+                <h3>Carnicería Tenerife</h3>
+                <p>Productos cárnicos de máxima calidad desde 2003</p>
+            </div>
+            <div class="footer-section">
+                <h3>Enlaces Rapidos</h3>
+                <a href="/">Inicio</a>
+                <a href="/productos">Productos</a>
+                <a href="/pedidos">Pedidos</a>
+                <a href="/contacto">Contacto</a>
+            </div>
+            <div class="footer-section">
+                <h3>Metodos de Pago</h3>
+                <div class="payment-methods">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-cc-paypal"></i>
+                    <i class="fas fa-university"></i>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <%= currentYear %> Carnicería Tenerife. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="/script.js"></script>
+    <script>
+        // Actualizar contador del carrito
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.querySelector('.cart-count').textContent = totalItems;
+        }
+        
+        // Busqueda
+        document.querySelector('.error-search input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `/productos?search=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+        
+        document.querySelector('.error-search button').addEventListener('click', function() {
+            const input = document.querySelector('.error-search input');
+            const query = input.value.trim();
+            if (query) {
+                window.location.href = `/productos?search=${encodeURIComponent(query)}`;
+            }
+        });
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+        });
+    </script>
+</body>
+</html>

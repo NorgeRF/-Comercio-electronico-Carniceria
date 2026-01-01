@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Carniceria Tenerife</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <style>
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pendiente { background: #ffc107; color: #000; }
+        .status-confirmado { background: #17a2b8; color: #fff; }
+        .status-preparando { background: #007bff; color: #fff; }
+        .status-enviado { background: #6f42c1; color: #fff; }
+        .status-entregado { background: #28a745; color: #fff; }
+        .status-cancelado { background: #dc3545; color: #fff; }
+        .status-pendiente_pago { background: #fd7e14; color: #fff; }
+        .order-row:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .stats-card {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+            <h1 class="h3">
+                <i class="fas fa-shopping-cart me-2"></i>
+                <%= title %>
+                <span class="badge bg-secondary"><%= totalOrders %> pedidos</span>
+            </h1>
+            <div>
+                <a href="/admin/orders/report" class="btn btn-outline-info me-2">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+                <a href="/admin" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <% if (success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <% if (error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <!-- Filtros y estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form class="row g-2">
+                            <div class="col-md-4">
+                                <select name="status" class="form-select" onchange="this.form.submit()">
+                                    <option value="todos" <%= !status || status === 'todos' ? 'selected' : '' %>>Todos los estados</option>
+                                    <option value="pendiente" <%= status === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                    <option value="pendiente_pago" <%= status === 'pendiente_pago' ? 'selected' : '' %>>Pendiente de pago</option>
+                                    <option value="confirmado" <%= status === 'confirmado' ? 'selected' : '' %>>Confirmado</option>
+                                    <option value="preparando" <%= status === 'preparando' ? 'selected' : '' %>>En preparación</option>
+                                    <option value="enviado" <%= status === 'enviado' ? 'selected' : '' %>>Enviado</option>
+                                    <option value="entregado" <%= status === 'entregado' ? 'selected' : '' %>>Entregado</option>
+                                    <option value="cancelado" <%= status === 'cancelado' ? 'selected' : '' %>>Cancelado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" 
+                                           placeholder="Buscar por código, cliente, teléfono..." 
+                                           value="<%= search || '' %>">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/admin/orders" class="btn btn-outline-secondary w-100">Limpiar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Estadísticas rápidas</h6>
+                        <div class="row text-center">
+                            <% stats.forEach(stat => { %>
+                                <div class="col-4">
+                                    <div class="<%= getOrderStatusClass(stat.estado) %> status-badge mb-1">
+                                        <%= getOrderStatusText(stat.estado) %>
+                                    </div>
+                                    <div class="fw-bold"><%= stat.count %></div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de pedidos -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Método Pago</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order => { %>
+                            <tr class="order-row" onclick="window.location.href='/admin/orders/<%= order.id %>'">
+                                <td>
+                                    <strong>#<%= order.codigo_pedido %></strong>
+                                    <% if (order.whatsapp_enviado) { %>
+                                        <i class="fas fa-check-circle text-success ms-1" title="WhatsApp enviado"></i>
+                                    <% } %>
+                                    <% if (order.payment_id && order.payment_id.startsWith('BIZ-')) { %>
+                                        <i class="fas fa-mobile-alt text-primary ms-1" title="Pago Bizum"></i>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div><%= order.cliente_nombre %></div>
+                                    <small class="text-muted"><%= order.cliente_email || 'Sin email' %></small>
+                                </td>
+                                <td>
+                                    <a href="tel:<%= order.cliente_telefono %>" class="text-decoration-none">
+                                        <%= formatPhone(order.cliente_telefono) %>
+                                    </a>
+                                    <% if (order.telefono_bizum) { %>
+                                        <br>
+                                        <small class="text-primary">
+                                            <i class="fas fa-mobile-alt"></i> Bizum: <%= formatPhone(order.telefono_bizum) %>
+                                        </small>
+                                    <% } %>
+                                </td>
+                                <td class="fw-bold"><%= formatPrice(order.total) %></td>
+                                <td>
+                                    <span class="<%= getOrderStatusClass(order.estado) %> status-badge">
+                                        <%= getOrderStatusText(order.estado) %>
+                                    </span>
+                                    <% if (order.payment_status) { %>
+                                        <br>
+                                        <small class="text-muted">
+                                            Pago: <%= order.payment_status %>
+                                        </small>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        <%= order.metodo_pago.toUpperCase() %>
+                                    </span>
+                                    <% if (order.pagado) { %>
+                                        <br>
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle"></i> Pagado
+                                        </small>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div><%= formatDate(order.created_at) %></div>
+                                    <small class="text-muted"><%= formatDateTime(order.created_at).split(' ')[1] %></small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/admin/orders/<%= order.id %>" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="https://wa.me/<%= order.cliente_telefono %>?text=Hola%20<%= encodeURIComponent(order.cliente_nombre.split(' ')[0]) %>%2C%20soy%20Carnicería%20Tenerife%20referente%20al%20pedido%20%23<%= order.codigo_pedido %>" 
+                                           target="_blank" class="btn btn-outline-success" title="Enviar WhatsApp">
+                                            <i class="fab fa-whatsapp"></i>
+                                        </a>
+                                        <% if (order.estado === 'pendiente' || order.estado === 'cancelado' || order.estado === 'pendiente_pago') { %>
+                                        <button class="btn btn-outline-danger delete-order-btn" 
+                                                data-id="<%= order.id %>" 
+                                                data-code="<%= order.codigo_pedido %>"
+                                                onclick="event.stopPropagation(); deleteOrder(this);">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <% if (totalPages > 1) { %>
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                            <a class="page-link" href="/admin/orders?page=<%= i %><%= status ? '&status=' + status : '' %><%= search ? '&search=' + search : '' %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                        <% } %>
+                    </ul>
+                </nav>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- JavaScript corregido -->
+    <script>
+        // Inicializar DataTable
+        $(document).ready(function() {
+            const table = $('#ordersTable').DataTable({
+                pageLength: 20,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: 7 }, // Columna de acciones
+                    { searchable: false, targets: 7 }
+                ]
+            });
+            
+            // Verificar que los botones existen
+            console.log('🔍 Verificando botones eliminar...');
+            const deleteButtons = $('.delete-order-btn');
+            console.log(`✅ Encontrados ${deleteButtons.length} botones eliminar`);
+            
+            // Agregar tooltips
+            deleteButtons.each(function() {
+                $(this).attr('title', 'Eliminar pedido');
+            });
+        });
+
+        // Función para eliminar pedido
+        function deleteOrder(button) {
+            const orderId = $(button).data('id');
+            const orderCode = $(button).data('code');
+            
+            console.log('🎯 Intentando eliminar pedido:', { orderId, orderCode });
+            
+            if (confirm(`¿Estás seguro de eliminar el pedido #${orderCode}?\n\nEsta acción NO se puede deshacer.`)) {
+                // Mostrar loading
+                const originalHtml = $(button).html();
+                $(button).prop('disabled', true);
+                $(button).html('<i class="fas fa-spinner fa-spin"></i>');
+                
+                // Enviar petición DELETE
+                $.ajax({
+                    url: `/api/admin/orders/${orderId}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        console.log('✅ Respuesta del servidor:', response);
+                        
+                        if (response.success) {
+                            // Mostrar mensaje de éxito
+                            alert(`✅ ${response.message}`);
+                            
+                            // Eliminar la fila de la tabla
+                            const row = $(button).closest('tr');
+                            row.fadeOut(500, function() {
+                                row.remove();
+                                
+                                // Recargar si no quedan filas
+                                if ($('#ordersTable tbody tr').length === 0) {
+                                    setTimeout(() => location.reload(), 1000);
+                                }
+                            });
+                        } else {
+                            alert(`❌ Error: ${response.message}`);
+                            $(button).prop('disabled', false);
+                            $(button).html(originalHtml);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('❌ Error AJAX:', { 
+                            status: xhr.status, 
+                            response: xhr.responseText,
+                            error: error 
+                        });
+                        
+                        let errorMessage = 'Error al eliminar el pedido';
+                        try {
+                            const errorData = JSON.parse(xhr.responseText);
+                            errorMessage = errorData.message || errorMessage;
+                        } catch (e) {
+                            errorMessage = xhr.responseText || errorMessage;
+                        }
+                        
+                        alert(`❌ ${errorMessage}`);
+                        $(button).prop('disabled', false);
+                        $(button).html(originalHtml);
+                    }
+                });
+            }
+        }
+
+        // También mantener event listener para DataTables
+        $(document).on('click', '.delete-order-btn', function(e) {
+            e.stopPropagation();
+            deleteOrder(this);
+        });
+    </script>
+</body>
+</html>

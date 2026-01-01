@@ -1,0 +1,67 @@
+<header class="main-header">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-utensils"></i>
+          Carnicería Tenerife
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-home"></i> Inicio
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/productos">
+                <i class="fas fa-drumstick-bite"></i> Productos
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/pedidos">
+                <i class="fas fa-shopping-cart"></i> Hacer Pedido
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/contacto">
+                <i class="fas fa-envelope"></i> Contacto
+              </a>
+            </li>
+            
+            <% if (customer) { %>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                  <i class="fas fa-user"></i> Mi Cuenta
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/mi-cuenta">
+                    <i class="fas fa-user-circle"></i> Mi Perfil
+                  </a></li>
+                  <li><a class="dropdown-item" href="/mis-pedidos">
+                    <i class="fas fa-shopping-bag"></i> Mis Pedidos
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="/logout-cliente">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                  </a></li>
+                </ul>
+              </li>
+            <% } else { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/login-cliente">
+                  <i class="fas fa-sign-in-alt"></i> Acceder
+                </a>
+              </li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
